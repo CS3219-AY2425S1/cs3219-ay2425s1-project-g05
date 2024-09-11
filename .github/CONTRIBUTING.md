@@ -55,7 +55,8 @@ The list of valid types are as such:
 - `ci`: Commits that affects our CI/CD configuration files (e.g. GitHub Actions `yml` files)
 - `docs`: Commits that update our project documentation
 - `perf`: Commits that addresses a code performance issue or investigates a code performance issue
-- `refactor`: Commits that refactor a portion of the code; no features or bug fixes are made
+- `chore`: Small tasks that are not related to any features or fixes, but is not large enough to count as a `refactor`
+- `refactor`: Commits that refactor a significant portion of the code; no features or bug fixes are made
 - `style`: Commits that help improve the overall style and code quality of the codebase
 - `test`: Commits that deals with unit tests and other forms of testing
 

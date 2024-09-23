@@ -11,7 +11,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         node: [20, 22]
-    name: Run tests on ${{ matrix.os }}
+    name: Run tests on ${{ matrix.os }} with Node ${{ matrix.node }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Codebase
@@ -24,7 +24,7 @@ jobs:
   scans:
     # do code scanning stuff here
     needs: test
-    name: Run code scanning tools here
+    name: Code Scanning
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Codebase
@@ -34,7 +34,7 @@ jobs:
     # build stuff here
     needs: test
     environment: staging
-    name: Build necessary components here
+    name: Build and Deploy Staging Environment
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Codebase
@@ -55,7 +55,7 @@ jobs:
           npm i
           npm run build
       - name: Upload to S3
-        working-directory: peer-prep
+        working-directory: peer-prep/dist
         run: |
           aws s3 sync . s3://peerprep-frontend-bucket
 
@@ -63,7 +63,7 @@ jobs:
     # build stuff here
     needs: build-staging
     environment: production
-    name: Build necessary components here
+    name: Build for Production Environment
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Codebase
@@ -86,7 +86,7 @@ jobs:
           npm i
           npm run build
       - name: Upload to S3
-        working-directory: peer-prep
+        working-directory: peer-prep/dist
         run: |
           aws s3 sync . s3://peerprep-frontend-bucket
 
@@ -95,7 +95,7 @@ jobs:
     needs:
       - build-staging
       - build-production
-    name: Build images here
+    name: Build Staging Images
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Codebase

@@ -1,0 +1,25 @@
+.header {
+  min-height: calc(100vh - 60px - var(--mantine-spacing-md));
+  /* background-color: var(--mantine-color-gray-0); */
+}
+
+.header-content {
+  min-height: 100vh;
+}
+.title {
+  text-align: center;
+  font-size: 24rem;
+}
+
+.description {
+  text-align: center;
+}
+
+.wrapper {
+  padding-top: calc(var(--mantine-spacing-xl) * 4);
+  padding-bottom: calc(var(--mantine-spacing-xl) * 4);
+}
+
+.shaded {
+  background-color: var(--mantine-color-gray-0);
+}

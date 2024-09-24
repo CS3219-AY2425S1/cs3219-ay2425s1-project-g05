@@ -46,7 +46,6 @@ jobs:
 
   build-deploy-frontend:
     # build stuff here
-    if: github.ref == 'refs/heads/frontend_staging'
     needs: test
     environment: staging
     name: Build and Deploy Frontend Staging Environment

@@ -1,0 +1,47 @@
+name: 'Generic Test Workflows'
+
+on:
+  push:
+    branches:
+      - '!main'
+      - '!staging'
+      - '!frontend-staging'
+  pull_request:
+    branches:
+      - '!main'
+      - '!staging'
+      - '!frontend-staging'
+  workflow_dispatch:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [20, 22]
+    name: Run tests on ${{ matrix.os }} with Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+      - name: Setup Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+  scans:
+    # do code scanning stuff here
+    needs: test
+    name: Code Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+  images:
+    # build images here
+    name: Build Production Images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4

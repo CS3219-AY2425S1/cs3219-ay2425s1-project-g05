@@ -1,8 +1,12 @@
-name: 'Continuous Integration GitHub Actions Workflow'
+name: 'Production Environment CI/CD Pipeline'
 
 on:
   push:
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -30,38 +34,8 @@ jobs:
       - name: Checkout Codebase
         uses: actions/checkout@v4
 
-  build-staging:
+  build:
     # build stuff here
-    needs: test
-    environment: staging
-    name: Build and Deploy Staging Environment
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v4
-      - name: Setup Node 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-      - name: Build and Deploy Frontend
-        working-directory: peer-prep
-        run: |
-          npm i
-          npm run build
-      - name: Upload to S3
-        working-directory: peer-prep/dist
-        run: |
-          aws s3 sync . s3://peerprep-frontend-bucket
-
-  build-production:
-    # build stuff here
-    needs: build-staging
     environment: production
     name: Build for Production Environment
     runs-on: ubuntu-latest
@@ -88,18 +62,9 @@ jobs:
       - name: Upload to S3
         working-directory: peer-prep/dist
         run: |
-          aws s3 sync . s3://peerprep-frontend-bucket
-
-  images:
-    # build images here
-    needs:
-      - build-staging
-      - build-production
-    name: Build Staging Images
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v4
+          aws s3 sync . s3://peerprep
+      - name: S3 bucket URL
+        run: echo "http://peerprep.s3-website-ap-southeast-1.amazonaws.com/"
 
   # deploy:
   #   # deploy stuff here

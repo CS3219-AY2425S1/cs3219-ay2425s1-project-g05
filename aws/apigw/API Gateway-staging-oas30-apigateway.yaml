@@ -4,11 +4,74 @@ info:
   description: "Main API Gateway for PeerPrep"
   version: "1.0.2"
 servers:
-- url: "https://hwu5j8znt5.execute-api.ap-southeast-1.amazonaws.com/{basePath}"
+- url: "https://csppwicfm9.execute-api.ap-southeast-1.amazonaws.com/{basePath}"
   variables:
     basePath:
-      default: "staging"
+      default: "v1"
 paths:
+  /api/question-service:
+    get:
+      operationId: "getAllQuestions"
+      responses:
+        "500":
+          description: "500 response"
+          content: {}
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL46170a"
+      security:
+      - PeerPrepJWTAuthorizer: []
+      x-amazon-apigateway-integration:
+        httpMethod: "GET"
+        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_templates"
+        type: "http_proxy"
+    post:
+      operationId: "createQuestion"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Question"
+        required: true
+      responses:
+        "201":
+          description: "201 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL76146b"
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODELd69e46"
+        "500":
+          description: "500 response"
+          content: {}
+        "409":
+          description: "409 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODELd4a771"
+      security:
+      - PeerPrepJWTAuthorizer: []
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_templates"
+        type: "http_proxy"
   /api/question-service/id/{id}:
     get:
       operationId: "getQuestionById"
@@ -36,7 +99,6 @@ paths:
                 $ref: "#/components/schemas/MODELd08b88"
       security:
       - PeerPrepJWTAuthorizer: []
-      - api_key: []
       x-amazon-apigateway-integration:
         httpMethod: "GET"
         uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service/id/{id}"
@@ -85,7 +147,6 @@ paths:
                 $ref: "#/components/schemas/MODEL23b348"
       security:
       - PeerPrepJWTAuthorizer: []
-      - api_key: []
       x-amazon-apigateway-integration:
         httpMethod: "PUT"
         uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service/id/{id}"
@@ -123,7 +184,6 @@ paths:
                 $ref: "#/components/schemas/MODELc8696d"
       security:
       - PeerPrepJWTAuthorizer: []
-      - api_key: []
       x-amazon-apigateway-integration:
         httpMethod: "DELETE"
         uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service/id/{id}"
@@ -132,71 +192,6 @@ paths:
             statusCode: "200"
         requestParameters:
           integration.request.path.id: "method.request.path.id"
-        passthroughBehavior: "when_no_templates"
-        type: "http_proxy"
-  /api/question-service:
-    get:
-      operationId: "getAllQuestions"
-      responses:
-        "500":
-          description: "500 response"
-          content: {}
-        "200":
-          description: "200 response"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MODEL46170a"
-      security:
-      - PeerPrepJWTAuthorizer: []
-      - api_key: []
-      x-amazon-apigateway-integration:
-        httpMethod: "GET"
-        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service"
-        responses:
-          default:
-            statusCode: "200"
-        passthroughBehavior: "when_no_templates"
-        type: "http_proxy"
-    post:
-      operationId: "createQuestion"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Question"
-        required: true
-      responses:
-        "201":
-          description: "201 response"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MODEL76146b"
-        "400":
-          description: "400 response"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MODELd69e46"
-        "500":
-          description: "500 response"
-          content: {}
-        "409":
-          description: "409 response"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MODELd4a771"
-      security:
-      - PeerPrepJWTAuthorizer: []
-      - api_key: []
-      x-amazon-apigateway-integration:
-        httpMethod: "POST"
-        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service"
-        responses:
-          default:
-            statusCode: "200"
         passthroughBehavior: "when_no_templates"
         type: "http_proxy"
   /api/question-service/random:
@@ -229,7 +224,6 @@ paths:
                 $ref: "#/components/schemas/MODEL1bfe98"
       security:
       - PeerPrepJWTAuthorizer: []
-      - api_key: []
       x-amazon-apigateway-integration:
         httpMethod: "GET"
         uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service/random"
@@ -256,7 +250,6 @@ paths:
                 $ref: "#/components/schemas/MODEL5d8fd9"
       security:
       - PeerPrepJWTAuthorizer: []
-      - api_key: []
       x-amazon-apigateway-integration:
         httpMethod: "POST"
         uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8001/api/user-service/users/logout"
@@ -301,7 +294,6 @@ paths:
                 $ref: "#/components/schemas/MODEL296230"
       security:
       - PeerPrepJWTAuthorizer: []
-      - api_key: []
       x-amazon-apigateway-integration:
         httpMethod: "PUT"
         uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8001/api/user-service/users/changeDisplayName"
@@ -326,7 +318,6 @@ paths:
                 $ref: "#/components/schemas/MODEL24b211"
       security:
       - PeerPrepJWTAuthorizer: []
-      - api_key: []
       x-amazon-apigateway-integration:
         httpMethod: "GET"
         uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service/categories"
@@ -335,6 +326,40 @@ paths:
             statusCode: "200"
         passthroughBehavior: "when_no_templates"
         type: "http_proxy"
+  /api/run-service:
+    post:
+      operationId: "executeCode"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CodeExecutionRequest"
+        required: true
+      responses:
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodeExecutionResult"
+      security:
+      - PeerPrepJWTAuthorizer: []
+      x-amazon-apigateway-integration:
+        credentials: "arn:aws:iam::730335480348:role/PeerPrepApiGatewayExecutionRole"
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:ap-southeast-1:states:action/StartSyncExecution"
+        responses:
+          default:
+            statusCode: "200"
+            responseTemplates:
+              application/json: "#set($string = $input.json('$.output'))\n#set($data\
+                \ = $util.parseJson($string))\n\n$data"
+        requestTemplates:
+          application/json: "#set($data = $util.escapeJavaScript($input.json('$')))\n\
+            {\n    \"input\": \"$data\",\n    \"stateMachineArn\": \"arn:aws:states:ap-southeast-1:730335480348:stateMachine:ExpressStateMachine\"\
+            \n}"
+        passthroughBehavior: "when_no_templates"
+        type: "aws"
   /api/user-service/users/login:
     post:
       operationId: "login"
@@ -373,8 +398,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MODELa1e3b1"
-      security:
-      - api_key: []
       x-amazon-apigateway-integration:
         httpMethod: "POST"
         uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8001/api/user-service/users/login"
@@ -383,41 +406,6 @@ paths:
             statusCode: "200"
         passthroughBehavior: "when_no_templates"
         type: "http_proxy"
-  /api/run-service:
-    post:
-      operationId: "executeCode"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CodeExecutionRequest"
-        required: true
-      responses:
-        "200":
-          description: "200 response"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CodeExecutionResult"
-      security:
-      - PeerPrepJWTAuthorizer: []
-      - api_key: []
-      x-amazon-apigateway-integration:
-        credentials: "arn:aws:iam::730335480348:role/PeerPrepApiGatewayExecutionRole"
-        httpMethod: "POST"
-        uri: "arn:aws:apigateway:ap-southeast-1:states:action/StartSyncExecution"
-        responses:
-          default:
-            statusCode: "200"
-            responseTemplates:
-              application/json: "#set($string = $input.json('$.output'))\n#set($data\
-                \ = $util.parseJson($string))\n\n$data"
-        requestTemplates:
-          application/json: "#set($data = $util.escapeJavaScript($input.json('$')))\n\
-            {\n    \"input\": \"$data\",\n    \"stateMachineArn\": \"arn:aws:states:ap-southeast-1:730335480348:stateMachine:ExpressStateMachine\"\
-            \n}"
-        passthroughBehavior: "when_no_templates"
-        type: "aws"
   /api/user-service/users/changePassword:
     put:
       operationId: "changePassword"
@@ -460,49 +448,9 @@ paths:
                 $ref: "#/components/schemas/MODEL403433"
       security:
       - PeerPrepJWTAuthorizer: []
-      - api_key: []
       x-amazon-apigateway-integration:
         httpMethod: "PUT"
         uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8001/api/user-service/users/changePassword"
-        responses:
-          default:
-            statusCode: "200"
-        passthroughBehavior: "when_no_templates"
-        type: "http_proxy"
-  /api/question-service/filter:
-    get:
-      operationId: "getFilteredQuestions"
-      parameters:
-      - name: "difficulty"
-        in: "query"
-        schema:
-          type: "string"
-      - name: "categories"
-        in: "query"
-        schema:
-          type: "string"
-      responses:
-        "400":
-          description: "400 response"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MODEL5d05cb"
-        "500":
-          description: "500 response"
-          content: {}
-        "200":
-          description: "200 response"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MODEL5b14d0"
-      security:
-      - PeerPrepJWTAuthorizer: []
-      - api_key: []
-      x-amazon-apigateway-integration:
-        httpMethod: "GET"
-        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service/filter"
         responses:
           default:
             statusCode: "200"
@@ -542,8 +490,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MODEL3c1ad8"
-      security:
-      - api_key: []
       x-amazon-apigateway-integration:
         httpMethod: "POST"
         uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8001/api/user-service/users"
@@ -581,10 +527,47 @@ paths:
                 $ref: "#/components/schemas/MODEL6b3f7b"
       security:
       - PeerPrepJWTAuthorizer: []
-      - api_key: []
       x-amazon-apigateway-integration:
         httpMethod: "DELETE"
         uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8001/api/user-service/users"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_templates"
+        type: "http_proxy"
+  /api/question-service/filter:
+    get:
+      operationId: "getFilteredQuestions"
+      parameters:
+      - name: "difficulty"
+        in: "query"
+        schema:
+          type: "string"
+      - name: "categories"
+        in: "query"
+        schema:
+          type: "string"
+      responses:
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL5d05cb"
+        "500":
+          description: "500 response"
+          content: {}
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL5b14d0"
+      security:
+      - PeerPrepJWTAuthorizer: []
+      x-amazon-apigateway-integration:
+        httpMethod: "GET"
+        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service/filter"
         responses:
           default:
             statusCode: "200"
@@ -1025,14 +1008,11 @@ components:
   securitySchemes:
     PeerPrepJWTAuthorizer:
       type: "apiKey"
-      name: "Authorization"
+      name: "Cookie"
       in: "header"
       x-amazon-apigateway-authtype: "custom"
       x-amazon-apigateway-authorizer:
         authorizerUri: "arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:730335480348:function:jwtAuthoriser/invocations"
         authorizerResultTtlInSeconds: 300
-        type: "token"
-    api_key:
-      type: "apiKey"
-      name: "x-api-key"
-      in: "header"
+        identitySource: "method.request.header.Cookie"
+        type: "request"

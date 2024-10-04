@@ -1,0 +1,17 @@
+# This is used to push images onto DockerHub
+FROM node:20
+
+# expose 5173 port for access to the container
+EXPOSE 5173
+
+# set workdir to prevent the container from restarting
+WORKDIR /app
+
+# copy all files into the Docker container
+COPY . .
+
+# install node libraries
+RUN npm install
+
+# execute the server; use dev command instead
+CMD ["npm", "run", "dev"]

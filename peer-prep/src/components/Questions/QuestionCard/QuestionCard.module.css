@@ -1,0 +1,32 @@
+.card {
+  max-width: 320px;
+  padding: 1rem;
+  border-radius: var(--mantine-radius-md);
+  border: rem(1px) solid
+    light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-7));
+  word-wrap: break-word; 
+  overflow-wrap: break-word; 
+  white-space: normal; 
+}
+
+.contents {
+  height: 300px;
+  width: 280px;
+}
+
+.title {
+  overflow: hidden; 
+  text-overflow: ellipsis;
+  white-space: nowrap; 
+  height: 60px;
+  max-width: 100%; 
+}
+
+.description {
+  white-space: normal; 
+  overflow-wrap: break-word; 
+  height: 180px;
+  max-width: 100%; 
+  white-space: "pre-wrap";
+  flex: 1,
+}

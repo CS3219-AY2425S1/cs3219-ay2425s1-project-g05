@@ -1,0 +1,15 @@
+.wrapper {
+  min-height: calc(100vh - 60px - var(--mantine-spacing-md));
+  align-items: center;
+
+  padding: 8rem;
+  padding-top: 2rem;
+
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.criteria {
+  padding: 4rem;
+  padding-top: 2rem;
+}

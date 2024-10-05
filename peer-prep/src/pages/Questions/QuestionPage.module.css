@@ -1,0 +1,8 @@
+.question-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); 
+  width: 66%;
+  justify-content: center;
+  margin: 0 auto;
+  row-gap: 2rem;
+}

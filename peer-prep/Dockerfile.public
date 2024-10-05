@@ -1,4 +1,11 @@
-# This is used to push images onto DockerHub
+# PeerPrep Frontend
+# 
+# This file is used for creating a PUBLIC container using PUBLICY
+# available images.
+# 
+# References:
+# https://github.com/awslabs/aws-lambda-web-adapter/tree/main/examples/expressjs
+
 FROM node:20
 
 # expose 5173 port for access to the container

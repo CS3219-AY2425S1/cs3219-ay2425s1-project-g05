@@ -1,0 +1,120 @@
+name: 'Production Environment CI/CD Pipeline'
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [20, 22]
+    name: Run tests on ${{ matrix.os }} with Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+      - name: Setup Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+  scans:
+    # do code scanning stuff here
+    needs: test
+    name: Code Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+  build:
+    # build stuff here
+    environment: production
+    name: Build for Production Environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        env:
+          AWS_REGION: 'ap-southeast-1'
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{  env.AWS_REGION }}
+      - name: Build and Deploy Frontend
+        working-directory: peer-prep
+        run: |
+          npm i
+          npm run build
+      - name: Upload to S3
+        working-directory: peer-prep/dist
+        run: |
+          aws s3 sync . s3://peerprep
+      - name: S3 bucket URL
+        run: echo "http://peerprep.s3-website-ap-southeast-1.amazonaws.com/"
+
+  # deploy:
+  #   # deploy stuff here
+  #   needs: images
+  #   name: Deploy images and infrastructure here
+  #   strategy:
+  #     matrix:
+  #       providers:
+  #         [
+  #           {
+  #             init: './terraform/init/aws',
+  #             deploy: './terraform/env/aws',
+  #             csp: 'AWS',
+  #           },
+  #           {
+  #             init: './terraform/init/aws',
+  #             deploy: './terraform/env/aws',
+  #             csp: 'GCP',
+  #           },
+  #         ]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout Codebase
+  #       uses: actions/checkout@v4
+
+  #     - name: Setup Terraform for ${{ matrix.providers.csp }}
+  #       uses: hashicorp/setup-terraform@v3
+
+  #     - name: Ensure Provision of Remote State Backends on ${{ matrix.providers.csp }}
+  #       working-directory: ${{ matrix.providers.init }}
+  #       run: terraform init
+
+  #     - name: Check and Deploy State Backends on ${{ matrix.providers.csp }}
+  #       working-directory: ${{ matrix.providers.init }}
+  #       run: terraform apply -auto-approve
+  #       continue-on-error: true # assumes that the buckets are already provisioned
+
+  #     # commands taken from https://github.com/gruntwork-io/terragrunt-action
+  #     - name: Initialise Terraform Infrastructure with Terragrunt on ${{ matrix.providers.csp }}
+  #       uses: gruntwork-io/terragrunt-action@v2
+  #       with:
+  #         tf_version: ''
+  #         tg_version: ''
+  #         tg_dir: ${{ matrix.providers.deploy }}
+  #         tg_command: 'plan'
+
+  #     - name: Setup Infrastructure with Terragrunt on ${{ matrix.providers.csp }}
+  #       uses: gruntwork-io/terragrunt-action@v2
+  #       with:
+  #         tf_version: ''
+  #         tg_version: ''
+  #         tg_dir: ${{ matrix.providers.deploy }}
+  #         tg_command: 'apply'

@@ -1,0 +1,30 @@
+.searchingWrapper {
+  min-height: calc(100vh - 60px - var(--mantine-spacing-md));
+  align-items: center;
+
+  padding: 8rem;
+
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.searchingImage {
+  width: 320px;
+}
+
+/* Rotating 180degree, stop, then rotating again */
+.loadingSpinner {
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

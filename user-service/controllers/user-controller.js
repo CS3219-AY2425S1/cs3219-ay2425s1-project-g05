@@ -7,14 +7,14 @@ export async function loginUser(req, res) {
 
         // Check if email and password are provided
         if (!email || !password) {
-            return res.status(400).json({ message: "Email and password are required" })
+            return res.status(400).json({ statusCode: 400, message: "Email and password are required" })
         }
 
         // Check if user exists
         const user = await ormFindUser(email);
         console.log(user)
         if (!user) {
-            return res.status(401).json({ message: "Incorrect email or password" })
+            return res.status(401).json({ statusCode: 401, message: "Incorrect email or password" })
         }
 
         // Delete password field from user object
@@ -24,7 +24,7 @@ export async function loginUser(req, res) {
         // Check if password is correct
         const isCorrectPassword = await comparePassword(password, user.password);
         if (!isCorrectPassword) {
-            return res.status(401).json({ message: "Incorrect email or password" })
+            return res.status(401).json({ statusCode: 401, message: "Incorrect email or password" })
         }
 
         // Generate access token
@@ -36,10 +36,10 @@ export async function loginUser(req, res) {
             res.cookie('accessToken', accessToken, { httpOnly: true }); // 60 minutes
         }
 
-        return res.status(200).json({ message: "Login successful", user: returnedUser })
+        return res.status(200).json({ statusCode: 200, message: "Login successful", data: { user: returnedUser } })
     } catch (error) {
         console.log(error)
-        return res.status(500).json({ message: "Unknown server error" })
+        return res.status(500).json({ statusCode: 500, message: "Unknown server error" })
     }
 }
 
@@ -47,10 +47,10 @@ export async function logoutUser(req, res) {
     try {
         // Clear access token cookie
         res.clearCookie('accessToken');
-        return res.status(200).json({ message: "Logout successful" })
+        return res.status(200).json({ statusCode: 200, message: "Logout successful" })
     } catch (error) {
         console.log(error)
-        return res.status(500).json({ message: "Unknown server error" })
+        return res.status(500).json({ statusCode: 500, message: "Unknown server error" })
     }
 }
 
@@ -60,21 +60,21 @@ export async function createUser(req, res) {
 
         // Check if email, password and displayName are provided
         if (!email || !password || !displayName) {
-            return res.status(400).json({ message: "Email, password and displayName are required" })
+            return res.status(400).json({ statusCode: 400, message: "Email, password and displayName are required" })
         }
 
         // Check if user already exists
         const existingUser = await ormFindUser(email);
         console.log(existingUser)
         if (existingUser) {
-            return res.status(409).json({ message: "Email already exists" })
+            return res.status(409).json({ statusCode: 409, message: "Email already exists" })
         }
 
         // Check if password is strong enough
         if (!checkPasswordStrength(password)) {
             return res.status(400).json({
-                message: "Password does not meet strength requirement. "
-                    + "Passwords should have minimum 8 characters, with at least alphabets and numbers",
+                statusCode: 400,
+                message: "Password does not meet strength requirement. Passwords should have minimum 8 characters, with at least alphabets and numbers",
             });
         }
 
@@ -82,17 +82,17 @@ export async function createUser(req, res) {
         const hashedPassword = hashPassword(password);
         const user = await ormCreateUser(email, hashedPassword, displayName);
         if (!user) {
-            return res.status(500).json({ message: "Unknown server error" })
+            return res.status(500).json({ statusCode: 500, message: "Unknown server error" })
         }
 
         // Delete password field from user object
         const returnedUser = { ...user }
         delete returnedUser.password
 
-        return res.status(201).json({ message: "New user created successfully", user: returnedUser })
+        return res.status(201).json({ statusCode: 201, message: "New user created successfully", data: { user: returnedUser } })
     } catch (error) {
         console.log(error)
-        return res.status(500).json({ message: "Unknown server error" })
+        return res.status(500).json({ statusCode: 500, message: "Unknown server error" })
     }
 }
 
@@ -102,20 +102,20 @@ export async function deleteUser(req, res) {
 
         // Check if email is provided
         if (!email) {
-            return res.status(400).json({ message: "Email is required" })
+            return res.status(400).json({ statusCode: 400, message: "Email is required" })
         }
 
         // Check if user exists
         const existingUser = await ormFindUser(email);
         console.log(existingUser)
         if (!existingUser) {
-            return res.status(404).json({ message: "User not found" })
+            return res.status(404).json({ statusCode: 404, message: "User not found" })
         }
 
         // Delete user
         const user = await ormDeleteUser(email);
         if (!user) {
-            return res.status(500).json({ message: "Unknown server error" })
+            return res.status(500).json({ statusCode: 500, message: "Unknown server error" })
         }
 
         // Delete password field from user object
@@ -125,10 +125,10 @@ export async function deleteUser(req, res) {
         // Clear access token cookie
         res.clearCookie('accessToken');
 
-        return res.status(200).json({ message: "User deleted successfully", user: returnedUser })
+        return res.status(200).json({ statusCode: 200, message: "User deleted successfully", data: { user: returnedUser } })
     } catch (error) {
         console.log(error)
-        return res.status(500).json({ message: "Unknown server error" })
+        return res.status(500).json({ statusCode: 500, message: "Unknown server error" })
     }
 }
 
@@ -139,27 +139,27 @@ export async function changePassword(req, res) {
 
         // Check if email, password and newPassword are provided
         if (!email || !password || !newPassword) {
-            return res.status(400).json({ message: "Email, password and newPassword are required" })
+            return res.status(400).json({ statusCode: 400, message: "Email, password and newPassword are required" })
         }
 
         // Check if user exists
         const existingUser = await ormFindUser(email);
         console.log(existingUser)
         if (!existingUser) {
-            return res.status(404).json({ message: "User not found" })
+            return res.status(404).json({ statusCode: 404, message: "User not found" })
         }
 
         // Check if password is correct
         const isCorrectPassword = await comparePassword(password, existingUser.password);
         if (!isCorrectPassword) {
-            return res.status(401).json({ message: "Incorrect old password needed to change password" })
+            return res.status(401).json({ statusCode: 401, message: "Incorrect old password needed to change password" })
         }
 
         // Check if password is strong enough
         if (!checkPasswordStrength(newPassword)) {
             return res.status(400).json({
-                message: "Password does not meet strength requirement. "
-                    + "Passwords should have minimum 8 characters, with at least alphabets and numbers",
+                statusCode: 400,
+                message: "Password does not meet strength requirement. Passwords should have minimum 8 characters, with at least alphabets and numbers",
             });
         }
 
@@ -167,16 +167,16 @@ export async function changePassword(req, res) {
         const hashedNewPassword = hashPassword(newPassword);
         const updatedUser = await ormUpdateUser(email, { password: hashedNewPassword });
         if (!updatedUser) {
-            return res.status(500).json({ message: "Unknown server error" })
+            return res.status(500).json({ statusCode: 500, message: "Unknown server error" })
         }
 
         // Delete password field from user object
         const returnedUser = { ...updatedUser }
         delete returnedUser.password
 
-        return res.status(200).json({ message: "User password updated successfully", user: returnedUser })
+        return res.status(200).json({ statusCode: 200, message: "User password updated successfully", data: { user: returnedUser } })
     } catch (error) {
-        return res.status(500).json({ message: "Unknown server error" })
+        return res.status(500).json({ statusCode: 500, message: "Unknown server error" })
     }
 }
 
@@ -187,27 +187,27 @@ export async function changeDisplayName(req, res) {
 
         // Check if email and newDisplayName are provided
         if (!email || !newDisplayName) {
-            return res.status(400).json({ message: "Email and newDisplayName are required" })
+            return res.status(400).json({ statusCode: 400, message: "Email and newDisplayName are required" })
         }
 
         // Check if user exists
         const existingUser = await ormFindUser(email);
         console.log(existingUser)
         if (!existingUser) {
-            return res.status(404).json({ message: "User not found" })
+            return res.status(404).json({ statusCode: 404, message: "User not found" })
         }
 
         const updatedUser = await ormUpdateUser(email, { displayName: newDisplayName });
         if (!updatedUser) {
-            return res.status(500).json({ message: "Unknown server error" })
+            return res.status(500).json({ statusCode: 500, message: "Unknown server error" })
         }
 
         // Delete password field from user object
         const returnedUser = { ...updatedUser }
         delete returnedUser.password
 
-        return res.status(200).json({ message: "User display name updated successfully", user: returnedUser })
+        return res.status(200).json({ statusCode: 200, message: "User display name updated successfully", data: { user: returnedUser } })
     } catch (error) {
-        return res.status(500).json({ message: "Unknown server error" })
+        return res.status(500).json({ statusCode: 500, message: "Unknown server error" })
     }
 }

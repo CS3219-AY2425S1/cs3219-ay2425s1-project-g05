@@ -14,7 +14,7 @@ import {
 import { IconSearch } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { Question, SAMPLE_QUESTIONS } from "../../types/question";
-import useApi, { QuestionServerResponse } from "../../hooks/useApi";
+import useApi, { ServerResponse } from "../../hooks/useApi";
 import { Link, useLoaderData } from "react-router-dom";
 import QuestionCard from "../../components/Questions/QuestionCard/QuestionCard";
 
@@ -24,12 +24,16 @@ export default function QuestionPage() {
   const [searchValue, setSearchValue] = useState("");
   const [questions, setQuestions] = useState<Question[]>([]);
 
+  interface QuestionResponse {
+    questions: Question[];
+  }
+
   // const { isLoading, error, fetchData } = useApi();
-  const data = useLoaderData() as QuestionServerResponse<Question[]>;
+  const data = useLoaderData() as ServerResponse<QuestionResponse>;
   console.log({ data });
 
   useEffect(() => {
-    setQuestions(data.data);
+    if (data.data) setQuestions(data.data.questions);
   }, [data]);
 
   return (

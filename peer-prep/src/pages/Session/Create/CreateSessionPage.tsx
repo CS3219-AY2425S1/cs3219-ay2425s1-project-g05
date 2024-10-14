@@ -14,7 +14,8 @@ import classes from "./CreateSessionPage.module.css";
 import { useEffect, useState } from "react";
 import { capitalizeFirstLetter } from "../../../utils/utils";
 import { Link, useLoaderData } from "react-router-dom";
-import useApi, { QuestionServerResponse, SERVICE } from "../../../hooks/useApi";
+import useApi, { ServerResponse, SERVICE } from "../../../hooks/useApi";
+import { CategoryResponseData } from "../../../types/question";
 
 // Arrays
 // Algorithms
@@ -29,15 +30,18 @@ export default function CreateSessionPage() {
   // TODO: query the question service to get a list of categories and difficulties
   const { fetchData } = useApi();
   useEffect(() => {
-    fetchData<QuestionServerResponse<string[]>>(
+    fetchData<ServerResponse<CategoryResponseData>>(
       `/question-service/categories`,
       SERVICE.QUESTION
     ).then((data) => {
-      if (data.success) {
-        setCategories(data.data);
+      const categories = data.data.categories;
+      const transformedCategories = categories.map((category: string) => ({
+        value: category.toUpperCase(),
+        label:
+          category.charAt(0).toUpperCase() + category.slice(1).toLowerCase(),
+      }));
 
-        console.log(data.data);
-      }
+      setCategories(transformedCategories.map((v) => v.value));
     });
   }, []);
 

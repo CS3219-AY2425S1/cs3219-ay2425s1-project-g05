@@ -54,6 +54,16 @@ const questionSchema = new Schema({
       },
     },
   },
+  templateCode: {
+    type: String
+  },
+  solutionCode: {
+    type: String,
+    required: [true, "Solution code is required"]
+  },
+  link: {
+    type: String
+  },
   isDeleted: {
     type: Boolean,
     default: false,

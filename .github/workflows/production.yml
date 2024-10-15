@@ -15,7 +15,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         node: [20, 22]
-    name: Run tests on ${{ matrix.os }} with Node ${{ matrix.node }}
+    name: Run Tests on ${{ matrix.os }} with Node ${{ matrix.node }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Codebase
@@ -24,10 +24,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
+      - name: Install Frontend Node Dependencies
+        working-directory: peer-prep
+        run: npm ci
+      - name: Test Build on Frontend
+        working-directory: peer-prep
+        run: npm run build
 
   scans:
-    # do code scanning stuff here
-    needs: test
     name: Code Scanning
     runs-on: ubuntu-latest
     steps:
@@ -35,9 +39,58 @@ jobs:
         uses: actions/checkout@v4
 
   build:
-    # build stuff here
-    environment: production
-    name: Build for Production Environment
+    # build container for both x86 and arm platforms
+    needs: test
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build User Service Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./user-service
+          file: ./user-service/Dockerfile.public
+          push: true
+          platforms: linux/${{ matrix.arch }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-user-service:staging-latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-user-service:staging-${{ github.sha }}
+      - name: Build Question Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./run-service
+          file: ./run-service/Dockerfile.public
+          push: true
+          platforms: linux/${{ matrix.arch }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-question-service:staging-latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-question-service:staging-${{ github.sha }}
+      - name: Build Matching Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./matching-service
+          file: ./matching-service/Dockerfile.public
+          push: true
+          platforms: linux/${{ matrix.arch }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-matching-service:staging-latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-question-service:staging-${{ github.sha }}
+
+  deploy:
+    needs: build
+    environment: staging
+    name: Deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Codebase
@@ -48,13 +101,11 @@ jobs:
           node-version: 20
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
-        env:
-          AWS_REGION: 'ap-southeast-1'
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{  env.AWS_REGION }}
-      - name: Build and Deploy Frontend
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Build and Deploy Frontend on S3
         working-directory: peer-prep
         run: |
           npm i
@@ -63,8 +114,64 @@ jobs:
         working-directory: peer-prep/dist
         run: |
           aws s3 sync . s3://peerprep
-      - name: S3 bucket URL
+      - name: Retrieve S3 Bucket URL
         run: echo "http://peerprep.s3-website-ap-southeast-1.amazonaws.com/"
+      - name: Retrieve Frontend Service Task Definition
+        run: |
+          aws ecs describe-task-definition \
+          --task-definition peerprep-frontend-service \
+          --query taskDefinition > frontend-service.json
+      - name: Deploy Frontend Service Task Definition onto AWS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: frontend-service.json
+          service: ${{ vars.ECS_FRONTEND_SERVICE_NAME }}
+          cluster: ${{ vars.ECS_CLUSTER_NAME }}
+          wait-for-service-stability: true
+          enable-ecs-managed-tags: true
+          force-new-deployment: true
+      - name: Retrieve User Service Task Definition
+        run: |
+          aws ecs describe-task-definition \
+          --task-definition peerprep-user-service \
+          --query taskDefinition > user-service.json
+      - name: Deploy User Service Task Definition onto AWS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: user-service.json
+          service: ${{ vars.ECS_USER_SERVICE_NAME }}
+          cluster: ${{ vars.ECS_CLUSTER_NAME }}
+          wait-for-service-stability: true
+          enable-ecs-managed-tags: true
+          force-new-deployment: true
+      - name: Retrieve Question Service Task Definition
+        run: |
+          aws ecs describe-task-definition \
+          --task-definition peerprep-question-service \
+          --query taskDefinition > question-service.json
+      - name: Deploy Question Service Task Definition onto AWS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: question-service.json
+          service: ${{ vars.ECS_USER_SERVICE_NAME }}
+          cluster: ${{ vars.ECS_CLUSTER_NAME }}
+          wait-for-service-stability: true
+          enable-ecs-managed-tags: true
+          force-new-deployment: true
+      - name: Retrieve Matching Service Task Definition
+        run: |
+          aws ecs describe-task-definition \
+          --task-definition peerprep-matching-service \
+          --query taskDefinition > matching-service.json
+      - name: Deploy Matching Service Task Definition onto AWS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: matching-service.json
+          service: ${{ vars.ECS_MATCHING_SERVICE_NAME }}
+          cluster: ${{ vars.ECS_CLUSTER_NAME }}
+          wait-for-service-stability: true
+          enable-ecs-managed-tags: true
+          force-new-deployment: true
 
   # deploy:
   #   # deploy stuff here

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { publicDecrypt } from "node:crypto";
 const Schema = mongoose.Schema;
 
 const testCaseSchema = new Schema({
@@ -20,6 +21,21 @@ const testCaseSchema = new Schema({
   },
 });
 
+const metaSchema = new Schema({
+  publicTestCaseCount: {
+    type: Number,
+    required: [true, "Public test case count is required"]
+  },
+  privateTestCaseCount: {
+    type: Number,
+    required: [true, "Private test case count is required"]
+  },
+  totalTestCaseCount: {
+    type: Number,
+    required: [true, "Total test case count is required"]
+  }
+})
+
 const questionSchema = new Schema({
   title: {
     type: String,
@@ -29,9 +45,18 @@ const questionSchema = new Schema({
     type: Object,
     required: [true, "Description is required"]
   },
+  categoriesId: {
+    type: [Number],
+    required: [true, "Categories is required"],
+    validate: {
+      validator: (value) => {
+        return value.length > 0;
+      },
+    },
+  },
   categories: {
     type: [String],
-    required: [true, "Topic is required"],
+    required: [true, "Categories is required"],
     validate: {
       validator: (value) => {
         return value.length > 0;
@@ -63,6 +88,10 @@ const questionSchema = new Schema({
   },
   link: {
     type: String
+  },
+  meta: {
+    type: metaSchema,
+    required: [true, "Meta is required"]
   },
   isDeleted: {
     type: Boolean,

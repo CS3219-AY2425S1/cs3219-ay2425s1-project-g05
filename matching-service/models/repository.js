@@ -1,11 +1,13 @@
 import PendingUserModel from "./pendingUser-model.js";
 
 export async function _findPendingUserByCriteria({ difficulties, categories, email }) {
-    return PendingUserModel.findOne({
-        difficulties: { $in: difficulties },
-        categories: { $in: categories },
-        email: { $ne: email }
-    });
+    return PendingUserModel
+        .findOne({
+            difficulties: { $in: difficulties },
+            categories: { $in: categories },
+            email: { $ne: email }
+        })
+        .sort({ createdAt: 1 });
 }
 
 export async function _deletePendingUserByEmail(email) {
@@ -25,5 +27,7 @@ export async function _deletePendingUserById(socketId) {
 }
 
 export async function _findAllPendingUsers() {
-    return PendingUserModel.find({});
+    return PendingUserModel
+        .find({})
+        .sort({ createdAt: 1 });
 }

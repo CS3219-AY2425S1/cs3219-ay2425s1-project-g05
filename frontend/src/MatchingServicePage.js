@@ -10,7 +10,10 @@ function MatchingServicePage() {
     const users = [
         { email: "test@email.com", displayName: "test" },
         { email: "user1@email.com", displayName: "user1" },
-        { email: "user2@email.com", displayName: "user2" }
+        { email: "user2@email.com", displayName: "user2" },
+        { email: "user3@email.com", displayName: "user3" },
+        { email: "user4@email.com", displayName: "user4" },
+        { email: "user5@email.com", displayName: "user5" }
     ];
 
     const { getSocket } = useContext(SocketContext);

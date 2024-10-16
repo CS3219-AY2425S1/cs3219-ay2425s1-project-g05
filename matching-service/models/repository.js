@@ -22,7 +22,7 @@ export async function _createPendingUser(param) {
     return PendingUserModel.create(param);
 }
 
-export async function _deletePendingUserById(socketId) {
+export async function _deletePendingUserBySocketId(socketId) {
     return PendingUserModel.findOneAndDelete({ socketId: socketId });
 }
 
@@ -30,4 +30,8 @@ export async function _findAllPendingUsers() {
     return PendingUserModel
         .find({})
         .sort({ createdAt: 1 });
+}
+
+export async function _deletePendingUserByDocId(docId) {
+    return PendingUserModel.findOneAndDelete({ _id: docId });
 }

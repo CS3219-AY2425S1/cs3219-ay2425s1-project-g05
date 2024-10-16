@@ -3,8 +3,9 @@ import {
     _deletePendingUserByEmail,
     _createPendingUser,
     _findPendingUserByEmail,
-    _deletePendingUserById,
-    _findAllPendingUsers
+    _deletePendingUserBySocketId,
+    _findAllPendingUsers,
+    _deletePendingUserByDocId
 } from "./repository.js";
 
 export async function ormFindPendingUserByCriteria(criteria) {
@@ -25,12 +26,12 @@ export async function ormDeletePendingUserByEmail(email) {
     try {
         const deletedUser = await _deletePendingUserByEmail(email);
         if (!deletedUser) {
-            console.log(`ORM: Could not delete pending user`);
+            console.log(`ORM: Could not delete pending user by email`);
             return undefined;
         }
         return deletedUser.toObject();
     } catch (error) {
-        console.log(`Error: could not delete pending user due to: ${error}`);
+        console.log(`Error: could not delete pending user by email due to: ${error}`);
         return undefined;
     }
 }
@@ -77,16 +78,16 @@ export async function ormCreatePendingUser(data) {
     }
 }
 
-export async function ormDeletePendingUserById(socketId) {
+export async function ormDeletePendingUserBySocketId(socketId) {
     try {
-        const deletedUser = await _deletePendingUserById(socketId);
+        const deletedUser = await _deletePendingUserBySocketId(socketId);
         if (!deletedUser) {
-            console.log(`ORM: Could not delete pending user`);
+            console.log(`ORM: Could not delete pending user by socket id`);
             return undefined;
         }
         return deletedUser.toObject();
     } catch (error) {
-        console.log(`Error: could not delete pending user due to: ${error}`);
+        console.log(`Error: could not delete pending user by socket id due to: ${error}`);
         return undefined;
     }
 }
@@ -101,6 +102,20 @@ export async function ormFindAllPendingUsers() {
         return queue;
     } catch (error) {
         console.log(`Error: could not find all pending users due to: ${error}`);
+        return undefined;
+    }
+}
+
+export async function ormDeletePendingUserByDocId(docId) {
+    try {
+        const deletedUser = await _deletePendingUserByDocId(docId);
+        if (!deletedUser) {
+            console.log(`ORM: Could not delete pending user by doc id`);
+            return undefined;
+        }
+        return deletedUser.toObject();
+    } catch (error) {
+        console.log(`Error: could not delete pending user by doc id due to: ${error}`);
         return undefined;
     }
 }

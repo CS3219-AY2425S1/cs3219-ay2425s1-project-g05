@@ -3,8 +3,9 @@ import {
     ormDeletePendingUserByEmail,
     ormCreatePendingUser,
     ormFindPendingUserByEmail,
-    ormDeletePendingUserById,
-    ormFindAllPendingUsers
+    ormDeletePendingUserBySocketId,
+    ormFindAllPendingUsers,
+    ormDeletePendingUserByDocId
 } from "../models/orm.js";
 
 export async function onDisconnect(socket) {
@@ -12,9 +13,9 @@ export async function onDisconnect(socket) {
     console.log(`Disconnected, try to delete pending user with socketId ${socket.id}`);
 
     // Delete pending user with socketId after disconnect, to prevent connecting with disconnected user
-    const deletedUser = await ormDeletePendingUserById(socket.id);
+    const deletedUser = await ormDeletePendingUserBySocketId(socket.id);
     if (!deletedUser) {
-        console.log(`CONTR: Could not delete pending user when disconnected`);
+        console.log(`CONTR: Could not delete pending user by socket id when disconnected`);
         return;
     }
 
@@ -27,9 +28,9 @@ export async function onCancelMatch(socket) {
     console.log(`Cancelling match: ${socket.id}`);
 
     // Delete pending user with socketId
-    const deletedUser = await ormDeletePendingUserById(socket.id);
+    const deletedUser = await ormDeletePendingUserBySocketId(socket.id);
     if (!deletedUser) {
-        console.log(`CONTR: Could not delete pending user when cancelling match`);
+        console.log(`CONTR: Could not delete pending user by socket id when cancelling match`);
         return;
     }
 
@@ -84,9 +85,11 @@ export async function onCreateMatch(socket, data, io) {
         // Create timeout for deleting pending user
         setTimeout(async () => {
             console.log(`Timeout for pending user ${pendingUser.email}, try to delete pending user`);
-            const deletedUser = await ormDeletePendingUserByEmail(pendingUser.email);
+
+            // Delete pending user after timeout based on docId
+            const deletedUser = await ormDeletePendingUserByDocId(pendingUser._id);
             if (!deletedUser) {
-                console.log(`CONTR: Could not delete pending user for timeout`);
+                console.log(`CONTR: Could not delete pending user by docId for timeout`);
                 return;
             }
 
@@ -112,7 +115,7 @@ export async function onCreateMatch(socket, data, io) {
         // Delete pending user from database
         const deletedUser = await ormDeletePendingUserByEmail(matchedUser.email);
         if (!deletedUser) {
-            console.log(`CONTR: Could not delete pending user after match found`);
+            console.log(`CONTR: Could not delete pending user by email after match found`);
             return;
         }
 

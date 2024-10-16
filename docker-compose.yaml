@@ -6,6 +6,13 @@ services:
     ports:
       - '8001:8001'
     network_mode: bridge
+  matching-service:
+    build:
+      context: ./matching-service
+      dockerfile: Dockerfile.public
+    ports:
+      - '8002:8002'
+    network_mode: bridge
   question-service:
     build:
       context: ./question-service

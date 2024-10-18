@@ -80,8 +80,14 @@ def lambda_handler(event, context):
         # }
         # context['arr'] = ['foo'] <- this is invalid, APIGW will not accept it
         # context['obj'] = {'foo':'bar'} <- also invalid
-    
-        # authResponse['context'] = context
+        
+        context = {
+            'email': principalEmail,
+            'displayName': principalDisplayName,
+            'isAdmin': principalIsAdmin
+        }
+        
+        authResponse['context'] = context
     
         return authResponse
     except:
@@ -90,7 +96,7 @@ def lambda_handler(event, context):
 
         raise Exception('Unauthorized')
         """
-        
+        raise
         raise Exception("Unauthorized")
 
 

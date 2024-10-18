@@ -22,4 +22,4 @@ COPY . .
 RUN npm install
 
 # execute the server
-CMD ["npm", "run", "dev"]
+CMD ["node", "server.js"]

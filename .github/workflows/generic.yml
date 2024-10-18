@@ -28,20 +28,3 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-
-  scans:
-    # do code scanning stuff here
-    needs: test
-    name: Code Scanning
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v4
-
-  images:
-    # build images here
-    name: Build Production Images
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v4

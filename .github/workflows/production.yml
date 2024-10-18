@@ -1,3 +1,6 @@
+# References https://docs.docker.com/build/ci/github-actions/
+# https://stackoverflow.com/questions/77740410/github-docker-build-push-action-with-multiple-architectures-is-slow
+
 name: 'Production Environment CI/CD Pipeline'
 
 on:
@@ -15,106 +18,170 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         node: [20, 22]
-    name: Run tests on ${{ matrix.os }} with Node ${{ matrix.node }}
+    name: Run Tests on ${{ matrix.os }} with Node ${{ matrix.node }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v4
+
       - name: Setup Node ${{ matrix.node }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
 
-  scans:
-    # do code scanning stuff here
+      - name: Install Frontend Node Dependencies
+        working-directory: peer-prep
+        run: npm ci
+
+      - name: Test Build on Frontend
+        working-directory: peer-prep
+        run: npm run build
+
+  build:
+    # build container for both x86 and arm platforms
     needs: test
-    name: Code Scanning
+    name: Build Production Containers and Push to Docker Hub
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build User Service Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./user-service
+          file: ./user-service/Dockerfile
+          push: true
+          platforms: linux/${{ matrix.arch }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-user-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-user-service:${{ github.sha }}
+
+      - name: Build Question Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./run-service
+          file: ./run-service/Dockerfile
+          push: true
+          platforms: linux/${{ matrix.arch }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-question-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-question-service:${{ github.sha }}
+
+      - name: Build Matching Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./matching-service
+          file: ./matching-service/Dockerfile
+          push: true
+          platforms: linux/${{ matrix.arch }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-matching-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-question-service:${{ github.sha }}
+
+  deploy:
+    needs: build
+    environment: staging
+    name: Deploy Production Environment
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v4
 
-  build:
-    # build stuff here
-    environment: production
-    name: Build for Production Environment
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v4
       - name: Setup Node 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
-        env:
-          AWS_REGION: 'ap-southeast-1'
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{  env.AWS_REGION }}
-      - name: Build and Deploy Frontend
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Frontend Deployment to S3
+      - name: Build and Deploy Frontend on S3
         working-directory: peer-prep
         run: |
           npm i
           npm run build
+
       - name: Upload to S3
         working-directory: peer-prep/dist
         run: |
           aws s3 sync . s3://peerprep
-      - name: S3 bucket URL
+
+      - name: Retrieve S3 Bucket URL
         run: echo "http://peerprep.s3-website-ap-southeast-1.amazonaws.com/"
 
-  # deploy:
-  #   # deploy stuff here
-  #   needs: images
-  #   name: Deploy images and infrastructure here
-  #   strategy:
-  #     matrix:
-  #       providers:
-  #         [
-  #           {
-  #             init: './terraform/init/aws',
-  #             deploy: './terraform/env/aws',
-  #             csp: 'AWS',
-  #           },
-  #           {
-  #             init: './terraform/init/aws',
-  #             deploy: './terraform/env/aws',
-  #             csp: 'GCP',
-  #           },
-  #         ]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout Codebase
-  #       uses: actions/checkout@v4
+      # Backend Deployment to ECS
+      - name: Render User Service Task Definition
+        id: render-user-service
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ./user-service/task-definition.json
+          container-name: user-service
+          image: ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-user-service:latest
+          environment-variables: |
+            PORT=${{ secrets.USER_SERVICE_PORT }}
+            ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}
+            MONGO_PROD_URI=${{ secrets.USER_SERVICE_MONGO_PROD_URI }}
 
-  #     - name: Setup Terraform for ${{ matrix.providers.csp }}
-  #       uses: hashicorp/setup-terraform@v3
+      - name: Deploy User Service Task Definition onto AWS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-user-service.outputs.task-definition }}
+          service: ${{ vars.ECS_USER_SERVICE_NAME }}
+          cluster: ${{ vars.ECS_CLUSTER_NAME }}
+          force-new-deployment: true
 
-  #     - name: Ensure Provision of Remote State Backends on ${{ matrix.providers.csp }}
-  #       working-directory: ${{ matrix.providers.init }}
-  #       run: terraform init
+      - name: Render Question Service Task Definition
+        id: render-question-service
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ./question-service/task-definition.json
+          container-name: question-service
+          image: ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-question-service:latest
+          environment-variables: |
+            ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}
+            DEV_URI=${{ secrets.QUESTION_SERVICE_DEV_URI }}
 
-  #     - name: Check and Deploy State Backends on ${{ matrix.providers.csp }}
-  #       working-directory: ${{ matrix.providers.init }}
-  #       run: terraform apply -auto-approve
-  #       continue-on-error: true # assumes that the buckets are already provisioned
+      - name: Deploy Question Service Task Definition onto AWS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-question-service.outputs.task-definition }}
+          service: ${{ vars.ECS_USER_SERVICE_NAME }}
+          cluster: ${{ vars.ECS_CLUSTER_NAME }}
+          force-new-deployment: true
 
-  #     # commands taken from https://github.com/gruntwork-io/terragrunt-action
-  #     - name: Initialise Terraform Infrastructure with Terragrunt on ${{ matrix.providers.csp }}
-  #       uses: gruntwork-io/terragrunt-action@v2
-  #       with:
-  #         tf_version: ''
-  #         tg_version: ''
-  #         tg_dir: ${{ matrix.providers.deploy }}
-  #         tg_command: 'plan'
+      - name: Render Matching Service Task Definition
+        id: render-matching-service
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ./matching-service/task-definition.json
+          container-name: matching-service
+          image: ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-matching-service:latest
+          environment-variables: |
+            PORT=${{ secrets.MATCHING_SERVICE_PORT }}
+            MONGO_TEST_URI=${{ secrets.MATCHING_SERVICE_MONGO_TEST_URI }}
 
-  #     - name: Setup Infrastructure with Terragrunt on ${{ matrix.providers.csp }}
-  #       uses: gruntwork-io/terragrunt-action@v2
-  #       with:
-  #         tf_version: ''
-  #         tg_version: ''
-  #         tg_dir: ${{ matrix.providers.deploy }}
-  #         tg_command: 'apply'
+      - name: Deploy Matching Service Task Definition onto AWS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-matching-service.outputs.task-definition }}
+          service: ${{ vars.ECS_MATCHING_SERVICE_NAME }}
+          cluster: ${{ vars.ECS_CLUSTER_NAME }}
+          force-new-deployment: true

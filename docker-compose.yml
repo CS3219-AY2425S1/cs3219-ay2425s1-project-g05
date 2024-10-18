@@ -1,0 +1,41 @@
+services:
+  redis:
+    image: redis:latest
+    restart: always
+    command: redis-server --save 1 1 --loglevel warning
+    volumes:
+      - redis:/data
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - '8001:8001'
+
+  question-service:
+    build:
+      context: ./question-service
+      dockerfile: Dockerfile
+    ports:
+      - '8003:8003'
+
+  collaboration-service:
+    build:
+      context: ./collaboration-service
+      dockerfile: Dockerfile
+    ports:
+      - '8004:8004'
+    depends_on:
+      - redis
+
+  frontend:
+    build:
+      context: ./peer-prep
+      dockerfile: Dockerfile
+    ports:
+      - '5173:5173'
+
+volumes:
+  redis:
+    driver: local

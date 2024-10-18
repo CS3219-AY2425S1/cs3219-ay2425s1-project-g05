@@ -2,7 +2,7 @@
 data "aws_iam_policy_document" "ec2_ecs_policy" {
   statement {
     actions = ["sts:AssumeRole"]
-    effect = "Allow"
+    effect  = "Allow"
 
     principals {
       type = "Service"
@@ -16,17 +16,17 @@ data "aws_iam_policy_document" "ec2_ecs_policy" {
 }
 
 resource "aws_iam_role" "ec2_ecs_policy" {
-  name = "peerprep-ec2-ecs-iam-role"
+  name               = "peerprep-ec2-ecs-iam-role"
   assume_role_policy = data.aws_iam_policy_document.ec2_ecs_policy.json
 }
 
-resource "aws_iam_role_policy_attachement" "ec2_ecs_policy" {
-  role = aws_iam_role.ec2_ecs_policy.name
+resource "aws_iam_role_policy_attachment" "ec2_ecs_policy" {
+  role       = aws_iam_role.ec2_ecs_policy.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_task_policy" {
-  role = aws_iam_role.ec2_ecs_policy.name
+  role       = aws_iam_role.ec2_ecs_policy.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
@@ -39,7 +39,7 @@ resource "aws_iam_instance_profile" "ec2_ecs_policy" {
 data "aws_iam_policy_document" "ecs_service_policy" {
   statement {
     actions = ["sts:AssumeRole"]
-    effect = "Allow"
+    effect  = "Allow"
 
     principals {
       identifiers = [
@@ -89,22 +89,22 @@ data "aws_iam_policy_document" "ecs_service_role_policy" {
       "ecs:TagResource"
     ]
     condition {
-      test = "ForAnyValue:StringEquals"
+      test     = "ForAnyValue:StringEquals"
       variable = "ecs:CreateAction"
-      values = ["CreateCluster", "RegisterContainerInstance"]
+      values   = ["CreateCluster", "RegisterContainerInstance"]
     }
     resources = ["*"]
   }
 }
 
 resource "aws_iam_role" "ecs_service_policy" {
-  name = "peerprep-ecs-service-role"
+  name               = "peerprep-ecs-service-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_service_policy.json
 }
 
 resource "aws_iam_role_policy" "ecs_service_role_policy" {
-  name = "peerprep-ecs-service-role-policy"
-  role = aws_iam_role.ecs_service_policy
+  name   = "peerprep-ecs-service-role-policy"
+  role   = aws_iam_role.ecs_service_policy
   policy = data.aws_iam_policy_document.ecs_service_role_policy.json
 }
 
@@ -171,9 +171,9 @@ data "aws_iam_policy_document" "PeerPrepApiGatewayExecutionRole" {
     ]
     resources = ["*"]
     condition {
-      test = "ForAnyValue:StringEquals"
+      test     = "ForAnyValue:StringEquals"
       variable = "iam:PassedToService"
-      values = ["lambda.amazonaws.com"]
+      values   = ["lambda.amazonaws.com"]
     }
   }
 
@@ -197,7 +197,7 @@ data "aws_iam_policy_document" "PeerPrepApiGatewayExecutionRole" {
 }
 
 resource "aws_iam_role" "PeerPrepApiGatewayExecutionRole" {
-  name = "PeerPrepApiGatewayExecutionRole"
+  name               = "PeerPrepApiGatewayExecutionRole"
   assume_role_policy = data.aws_iam_policy_document.PeerPrepApiGatewayExecutionRole.json
 }
 
@@ -208,11 +208,11 @@ resource "aws_iam_instance_profile" "PeerPrepApiGatewayExecutionRole" {
 
 data "aws_iam_policy_document" "PeerPrepLambdaExecutionAndLogsRole" {
   statement {
-    effect = "Allow"
+    effect  = "Allow"
     actions = ["sts:AssumeRole"]
 
     principals {
-      type = "Service"
+      type        = "Service"
       identifiers = ["lambda.amazonaws.com"]
     }
   }
@@ -254,7 +254,7 @@ data "aws_iam_policy_document" "PeerPrepLambdaExecutionAndLogsRole" {
 }
 
 resource "aws_iam_role" "PeerPrepLambdaExecutionAndLogsRole" {
-  name = "PeerPrepLambdaExecutionAndLogsRole"
+  name               = "PeerPrepLambdaExecutionAndLogsRole"
   assume_role_policy = data.aws_iam_policy_document.PeerPrepLambdaExecutionAndLogsRole.json
 }
 

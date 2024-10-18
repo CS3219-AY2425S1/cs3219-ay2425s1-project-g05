@@ -12,15 +12,15 @@ resource "aws_s3_bucket" "staging-bucket" {
 }
 
 resource "aws_s3_bucket_versioning" "staging-bucket-versioning" {
-  bucket = aws_s3_bucket.staging-bucket
+  bucket = aws_s3_bucket.staging-bucket.bucket
 
   versioning_configuration {
-    status = true
+    status = "Enabled"
   }
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "staging-bucket-encryption" {
-  bucket = aws_s3_bucket.staging-bucket
+  bucket = aws_s3_bucket.staging-bucket.bucket
 
   rule {
     apply_server_side_encryption_by_default {
@@ -30,7 +30,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "staging-bucket-en
 }
 
 resource "aws_s3_bucket_public_access_block" "staging-bucket-privacy" {
-  bucket                  = aws_s3_bucket.staging-bucket
+  bucket                  = aws_s3_bucket.staging-bucket.bucket
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true

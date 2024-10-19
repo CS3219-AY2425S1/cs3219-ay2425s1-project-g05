@@ -1,4 +1,4 @@
-# PeerPrep Frontend
+# PeerPrep Collaboration Service Dockerfile
 # 
 # This file is used for creating a PUBLIC container using PUBLICY
 # available images.
@@ -8,11 +8,11 @@
 
 FROM node:20
 
-# expose 5173 port for access to the container
-EXPOSE 5173
+# expose 8004 port for access to the container
+EXPOSE 8004
 
-# set workdir to prevent the container from restarting
-WORKDIR /app
+# Set work dir to prevent retarts
+WORKDIR /collaboration-service
 
 # copy all files into the Docker container
 COPY . .
@@ -20,5 +20,5 @@ COPY . .
 # install node libraries
 RUN npm install
 
-# execute the server; use dev command instead
-CMD ["npm", "run", "dev"]
+# execute the server
+CMD ["node", "server.js"]

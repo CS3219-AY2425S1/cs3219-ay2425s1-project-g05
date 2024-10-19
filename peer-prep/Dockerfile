@@ -1,4 +1,4 @@
-# PeerPrep Question Service Dockerfile
+# PeerPrep Frontend
 # 
 # This file is used for creating a PUBLIC container using PUBLICY
 # available images.
@@ -8,11 +8,12 @@
 
 FROM node:20
 
-# expose 8003 port for access to the container
-EXPOSE 8003
+# expose 5173 port for access to the container
+ENV PORT=5173
+EXPOSE 5173
 
-# Set work dir to prevent retarts
-WORKDIR /question-service
+# set workdir to prevent the container from restarting
+WORKDIR /app
 
 # copy all files into the Docker container
 COPY . .
@@ -20,5 +21,5 @@ COPY . .
 # install node libraries
 RUN npm install
 
-# execute the server
-CMD ["node", "index.js"]
+# execute the server; use dev command instead
+CMD ["npm", "run", "dev"]

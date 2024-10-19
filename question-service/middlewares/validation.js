@@ -48,19 +48,19 @@ const joiQuestionSchema = Joi.object({
     "object.base": "Description is required as an object",
     "any.required": "Description is required",
   }),
-  categories: Joi.array()
+  categoriesId: Joi.array()
     .items(
-      Joi.string().trim().min(1).messages({
-        "string.empty": "Each category cannot be empty",
-        "string.min": "Each category must be at least 1 character long",
+      Joi.number().min(0).max(7).messages({
+        "number.base": "Each category must be a number",
+        "number.min": "Category must be between 0 and 7",
+        "number.max": "Category must be between 0 and 7",
       })
     )
-    .min(1)
     .required()
+    .min(1)
     .messages({
       "array.base": "Categories must be an array",
-      "array.min": "At least one topic is required",
-      "any.required": "Categories are required",
+      "array.min": "At least one category is required if specified",
     }),
   difficulty: Joi.string().valid("HARD", "MEDIUM", "EASY").required().messages({
     "any.only": "Difficulty must be either HARD, MEDIUM, or EASY",
@@ -76,10 +76,9 @@ const joiQuestionSchema = Joi.object({
     "string.min": "Template code cannot be empty",
     "string.empty": "Template code cannot be empty",
   }),
-  solutionCode: Joi.string().required().trim().min(1).messages({
+  solutionCode: Joi.string().optional().trim().min(1).messages({
     "string.min": "Solution cannot be empty",
     "string.empty": "Solution code cannot be empty",
-    "any.required": "Solution code is required",
   }),
   link: Joi.string().optional().trim().min(1).messages({
     "string.min": "Link cannot be empty",
@@ -104,17 +103,19 @@ const joiPartialQuestionSchema = Joi.object({
   description: Joi.object().optional().messages({
     "object.base": "Description must be an object",
   }),
-  categories: Joi.array()
+  categoriesId: Joi.array()
     .items(
-      Joi.string().trim().min(1).messages({
-        "string.empty": "Each category cannot be empty",
-        "string.min": "Each category must be at least 1 character long",
+      Joi.number().min(0).max(7).messages({
+        "number.base": "Each category must be a number",
+        "number.min": "Category must be between 0 and 7",
+        "number.max": "Category must be between 0 and 7",
       })
     )
     .optional()
+    .min(1)
     .messages({
       "array.base": "Categories must be an array",
-      "array.min": "At least one topic is required",
+      "array.min": "At least one category is required if specified",
     }),
   difficulty: Joi.string().valid("EASY", "MEDIUM", "HARD").optional().messages({
     "any.only": "Difficulty must be either HARD, MEDIUM, or EASY",
@@ -125,7 +126,7 @@ const joiPartialQuestionSchema = Joi.object({
   }),
   templateCode: Joi.string().optional().trim().min(1).messages({
     "string.min": "Template code cannot be empty",
-    "string.empty": "Solution code cannot be empty",
+    "string.empty": "Template code cannot be empty",
   }),
   solutionCode: Joi.string().optional().trim().min(1).messages({
     "string.min": "Solution cannot be empty",
@@ -141,12 +142,10 @@ const joiPartialQuestionSchema = Joi.object({
 // VALIDATION MIDDLEWARE - CREATE QUESTION
 const validateNewQuestion = (req, res, next) => {
   const questionToCreate = req.body;
-  console.log(questionToCreate);
   questionToCreate.difficulty = questionToCreate.difficulty.toUpperCase();
   const { error } = joiQuestionSchema.validate(req.body);
 
   if (error) {
-    console.log(error);
     throw new BadRequestError(error.details[0].message);
   }
 
@@ -156,14 +155,8 @@ const validateNewQuestion = (req, res, next) => {
 // VALIDATION MIDDLEWARE - UPDATE QUESTION
 const validateUpdatedQuestion = (req, res, next) => {
   const questionToUpdate = req.body;
-  console.log(questionToUpdate);
   if (questionToUpdate.difficulty) {
     questionToUpdate.difficulty = questionToUpdate.difficulty.toUpperCase();
-  }
-  if (questionToUpdate.categories) {
-    questionToUpdate.categories = questionToUpdate.categories.map((category) =>
-      category.toUpperCase()
-    );
   }
   const { error } = joiPartialQuestionSchema.validate(req.body);
 

@@ -5,3 +5,7 @@ export type User = {
   isAdmin: boolean,
   id: string,
 }
+
+export interface UserResponseData {
+  user: User;
+}

@@ -5,7 +5,7 @@ export type TestCase = {
   testCode: string;
   isPublic: boolean;
   expectedOutput: string;
-  meta: { [key: string]: any }; 
+  meta: { [key: string]: any };
 };
 
 export type QuestionOlsd = {
@@ -19,15 +19,27 @@ export type QuestionOlsd = {
 }
 
 export type Question = {
-  _id: string; 
+  _id: string;
   title: string;
-  description: { [key: string]: any }; 
+  description: { [key: string]: any };
   categories: string[];
   difficulty: Complexity;
   isDeleted: boolean;
   testCases: TestCase[];
-  __v: number; 
+  solutionCode: string;
+  link: string;
+  __v: number;
 };
+
+export interface QuestionResponseData {
+  question?: Question;
+  questions?: Question[];
+  categories?: string[];
+}
+
+export interface CategoryResponseData {
+  categories: string[];
+}
 
 export const SAMPLE_QUESTIONS: any[] = [{
   id: 1,

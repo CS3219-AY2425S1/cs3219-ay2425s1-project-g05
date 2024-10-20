@@ -1,8 +1,8 @@
 import { useLocalStorage } from "@mantine/hooks";
 import { createContext, ReactElement, useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { User } from "../types/user";
-import useApi, { SERVICE, UserServerResponse } from "./useApi";
+import { User, UserResponseData } from "../types/user";
+import useApi, { ServerResponse, SERVICE } from "./useApi";
 import { notifications } from "@mantine/notifications";
 
 export interface AuthContextType {
@@ -45,7 +45,7 @@ export const AuthProvider = ({
 
   // call this function when you want to authenticate the user
   const login = async (data: { email: string; password: string }) => {
-    fetchData<UserServerResponse<User>>(
+    fetchData<ServerResponse<UserResponseData>>(
       `/user-service/users/login`,
       SERVICE.USER,
       {
@@ -56,10 +56,10 @@ export const AuthProvider = ({
         body: JSON.stringify(data),
       }
     )
-      .then((data) => {
+      .then((response) => {
         // ok!
-        setUser(data.user || null);
-        console.log(data.user, "<<<<");
+        setUser(response.data.user || null);
+        console.log(response.data.user, "<<<<");
         navigate("/dashboard", { replace: true });
 
         notifications.show({

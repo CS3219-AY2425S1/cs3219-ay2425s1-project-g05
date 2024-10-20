@@ -16,10 +16,10 @@ app.use(corsMiddleware);
 // Initialise routers
 app.use("/api/user-service/users", userRouter)
 
-// Test route
-app.get("/", (req, res) => {
-    res.status(200).json({ message: "Connected to / route of user-service" })
-})
+// Test Route for Health Checks
+app.get("/healthz", (req, res) => {
+    res.status(200).json({ message: "Connected to /healthz route of user-service" });
+});
 
 // Connect to DB, then listen at port
 await connectToDB().then(() => {

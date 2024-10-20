@@ -24,7 +24,14 @@ const deleteQuestionById = async (id) => {
 };
 
 const updateQuestionById = async (id, question) => {
-  return Question.findByIdAndUpdate(id, question, { new: true });
+  const allowedFields = ['title', 'description', 'difficulty', 'categories', 'testCases', 'templateCode', 'solutionCode', 'link'];
+  const sanitizedQuestion = {};
+  for (const key of allowedFields) {
+    if (question[key] !== undefined) {
+      sanitizedQuestion[key] = question[key];
+    }
+  }
+  return Question.findByIdAndUpdate(id, sanitizedQuestion, { new: true });
 };
 
 const getFilteredQuestions = async (body) => {
@@ -44,13 +51,12 @@ const getFilteredQuestions = async (body) => {
 };
 
 const getQuestionsByDescription = async (description) => {
-  return Question.find({ description: description, isDeleted: false });
-};
+  return Question.find({ description: { $eq: description }, isDeleted: false });};
 
 const getQuestionsByTitleAndDifficulty = async (title, difficulty) => {
   return Question.find({
-    title: title,
-    difficulty: difficulty.toUpperCase(),
+    title: { $eq: title },
+    difficulty: { $eq: difficulty.toUpperCase() },
     isDeleted: false,
   });
 };

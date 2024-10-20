@@ -4,16 +4,10 @@ import { useLocalStorage } from "@mantine/hooks";
 import { useAuth } from "./useAuth";
 import { useNavigate } from "react-router-dom";
 
-export interface QuestionServerResponse<T> {
-  success: boolean;
-  status: number;
-  data: T;
-  message?: string;
-}
-
-export interface UserServerResponse<T> {
-  user?: T;
+export interface ServerResponse<T> {
+  statusCode: number;
   message: string;
+  data: T;
 }
 
 // export interface ServerError {

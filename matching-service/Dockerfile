@@ -18,4 +18,4 @@ COPY . .
 RUN npm install
 
 # execute the server
-CMD ["node", "index.js"]
+CMD ["node", "server.js"]

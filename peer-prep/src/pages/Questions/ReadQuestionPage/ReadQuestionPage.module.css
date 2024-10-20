@@ -1,0 +1,41 @@
+.header {
+  border-left: 4px solid;
+  border-top: 4px solid;
+  border-top-left-radius: var(--mantine-radius-md);
+
+  padding: 1rem 2rem;
+}
+
+.description {
+  white-space: pre-wrap;
+}
+
+.easy {
+  .header {
+    border-color: var(--mantine-color-lime-1);
+  }
+}
+
+.medium {
+  .header {
+    border-color: var(--mantine-color-violet-1);
+  }
+}
+
+.hard {
+  .header {
+    border-color: var(--mantine-color-pink-1);
+  }
+}
+
+:root[data-mantine-color-scheme="dark"] {
+  .easy,
+  .medium,
+  .hard {
+    .header {
+      border: none;
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
+}

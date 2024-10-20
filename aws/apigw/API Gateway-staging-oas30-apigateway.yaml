@@ -1,0 +1,1038 @@
+openapi: "3.0.1"
+info:
+  title: "API Gateway"
+  description: "Main API Gateway for PeerPrep"
+  version: "1.0.2"
+servers:
+- url: "https://hwu5j8znt5.execute-api.ap-southeast-1.amazonaws.com/{basePath}"
+  variables:
+    basePath:
+      default: "staging"
+paths:
+  /api/question-service/id/{id}:
+    get:
+      operationId: "getQuestionById"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "404":
+          description: "404 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODELe64a59"
+        "500":
+          description: "500 response"
+          content: {}
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODELd08b88"
+      security:
+      - PeerPrepJWTAuthorizer: []
+      - api_key: []
+      x-amazon-apigateway-integration:
+        httpMethod: "GET"
+        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service/id/{id}"
+        responses:
+          default:
+            statusCode: "200"
+        requestParameters:
+          integration.request.path.id: "method.request.path.id"
+        passthroughBehavior: "when_no_templates"
+        type: "http_proxy"
+    put:
+      operationId: "updateQuestionById"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Question"
+        required: true
+      responses:
+        "404":
+          description: "404 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODELf1bbf4"
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL803475"
+        "500":
+          description: "500 response"
+          content: {}
+        "409":
+          description: "409 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL23b348"
+      security:
+      - PeerPrepJWTAuthorizer: []
+      - api_key: []
+      x-amazon-apigateway-integration:
+        httpMethod: "PUT"
+        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service/id/{id}"
+        responses:
+          default:
+            statusCode: "200"
+        requestParameters:
+          integration.request.path.id: "method.request.path.id"
+        passthroughBehavior: "when_no_templates"
+        timeoutInMillis: 29000
+        type: "http_proxy"
+    delete:
+      operationId: "deleteQuestionById"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "404":
+          description: "404 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL44ef1f"
+        "500":
+          description: "500 response"
+          content: {}
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODELc8696d"
+      security:
+      - PeerPrepJWTAuthorizer: []
+      - api_key: []
+      x-amazon-apigateway-integration:
+        httpMethod: "DELETE"
+        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service/id/{id}"
+        responses:
+          default:
+            statusCode: "200"
+        requestParameters:
+          integration.request.path.id: "method.request.path.id"
+        passthroughBehavior: "when_no_templates"
+        type: "http_proxy"
+  /api/question-service:
+    get:
+      operationId: "getAllQuestions"
+      responses:
+        "500":
+          description: "500 response"
+          content: {}
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL46170a"
+      security:
+      - PeerPrepJWTAuthorizer: []
+      - api_key: []
+      x-amazon-apigateway-integration:
+        httpMethod: "GET"
+        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_templates"
+        type: "http_proxy"
+    post:
+      operationId: "createQuestion"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Question"
+        required: true
+      responses:
+        "201":
+          description: "201 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL76146b"
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODELd69e46"
+        "500":
+          description: "500 response"
+          content: {}
+        "409":
+          description: "409 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODELd4a771"
+      security:
+      - PeerPrepJWTAuthorizer: []
+      - api_key: []
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_templates"
+        type: "http_proxy"
+  /api/question-service/random:
+    get:
+      operationId: "findQuestion"
+      parameters:
+      - name: "difficulty"
+        in: "query"
+        schema:
+          type: "string"
+      - name: "categories"
+        in: "query"
+        schema:
+          type: "string"
+      responses:
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODELacc33f"
+        "500":
+          description: "500 response"
+          content: {}
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL1bfe98"
+      security:
+      - PeerPrepJWTAuthorizer: []
+      - api_key: []
+      x-amazon-apigateway-integration:
+        httpMethod: "GET"
+        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service/random"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_templates"
+        type: "http_proxy"
+  /api/user-service/users/logout:
+    post:
+      operationId: "logout"
+      responses:
+        "500":
+          description: "500 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL52bf6e"
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL5d8fd9"
+      security:
+      - PeerPrepJWTAuthorizer: []
+      - api_key: []
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8001/api/user-service/users/logout"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_templates"
+        type: "http_proxy"
+  /api/user-service/users/changeDisplayName:
+    put:
+      operationId: "changeDisplayName"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MODELde4138"
+        required: true
+      responses:
+        "404":
+          description: "404 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODELc531a7"
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL47bcc1"
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODELc76a41"
+        "500":
+          description: "500 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL296230"
+      security:
+      - PeerPrepJWTAuthorizer: []
+      - api_key: []
+      x-amazon-apigateway-integration:
+        httpMethod: "PUT"
+        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8001/api/user-service/users/changeDisplayName"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_templates"
+        timeoutInMillis: 29000
+        type: "http_proxy"
+  /api/question-service/categories:
+    get:
+      operationId: "getCategories"
+      responses:
+        "500":
+          description: "500 response"
+          content: {}
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL24b211"
+      security:
+      - PeerPrepJWTAuthorizer: []
+      - api_key: []
+      x-amazon-apigateway-integration:
+        httpMethod: "GET"
+        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service/categories"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_templates"
+        type: "http_proxy"
+  /api/user-service/users/login:
+    post:
+      operationId: "login"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MODEL0bebcf"
+        required: true
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Set-Cookie:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODELe6d2f1"
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL638449"
+        "401":
+          description: "401 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODELc4cc1a"
+        "500":
+          description: "500 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODELa1e3b1"
+      security:
+      - api_key: []
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8001/api/user-service/users/login"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_templates"
+        type: "http_proxy"
+  /api/run-service:
+    post:
+      operationId: "executeCode"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CodeExecutionRequest"
+        required: true
+      responses:
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodeExecutionResult"
+      security:
+      - PeerPrepJWTAuthorizer: []
+      - api_key: []
+      x-amazon-apigateway-integration:
+        credentials: "arn:aws:iam::730335480348:role/PeerPrepApiGatewayExecutionRole"
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:ap-southeast-1:states:action/StartSyncExecution"
+        responses:
+          default:
+            statusCode: "200"
+            responseTemplates:
+              application/json: "#set($string = $input.json('$.output'))\n#set($data\
+                \ = $util.parseJson($string))\n\n$data"
+        requestTemplates:
+          application/json: "#set($data = $util.escapeJavaScript($input.json('$')))\n\
+            {\n    \"input\": \"$data\",\n    \"stateMachineArn\": \"arn:aws:states:ap-southeast-1:730335480348:stateMachine:ExpressStateMachine\"\
+            \n}"
+        passthroughBehavior: "when_no_templates"
+        type: "aws"
+  /api/user-service/users/changePassword:
+    put:
+      operationId: "changePassword"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MODELe9c20a"
+        required: true
+      responses:
+        "404":
+          description: "404 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODELca9eeb"
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL72b7fb"
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL73c89a"
+        "401":
+          description: "401 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL1eb856"
+        "500":
+          description: "500 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL403433"
+      security:
+      - PeerPrepJWTAuthorizer: []
+      - api_key: []
+      x-amazon-apigateway-integration:
+        httpMethod: "PUT"
+        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8001/api/user-service/users/changePassword"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_templates"
+        type: "http_proxy"
+  /api/question-service/filter:
+    get:
+      operationId: "getFilteredQuestions"
+      parameters:
+      - name: "difficulty"
+        in: "query"
+        schema:
+          type: "string"
+      - name: "categories"
+        in: "query"
+        schema:
+          type: "string"
+      responses:
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL5d05cb"
+        "500":
+          description: "500 response"
+          content: {}
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL5b14d0"
+      security:
+      - PeerPrepJWTAuthorizer: []
+      - api_key: []
+      x-amazon-apigateway-integration:
+        httpMethod: "GET"
+        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8003/api/question-service/filter"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_templates"
+        type: "http_proxy"
+  /api/user-service/users:
+    post:
+      operationId: "createUser"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MODELc1639c"
+        required: true
+      responses:
+        "201":
+          description: "201 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL4dabfb"
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL8b3086"
+        "500":
+          description: "500 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL57b4fe"
+        "409":
+          description: "409 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL3c1ad8"
+      security:
+      - api_key: []
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8001/api/user-service/users"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_templates"
+        type: "http_proxy"
+    delete:
+      operationId: "deleteUser"
+      responses:
+        "404":
+          description: "404 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL955a3a"
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL9e0dcb"
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL0ac28b"
+        "500":
+          description: "500 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MODEL6b3f7b"
+      security:
+      - PeerPrepJWTAuthorizer: []
+      - api_key: []
+      x-amazon-apigateway-integration:
+        httpMethod: "DELETE"
+        uri: "http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com:8001/api/user-service/users"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_templates"
+        type: "http_proxy"
+components:
+  schemas:
+    MODEL3c1ad8:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "error message"
+    MODEL4dabfb:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "success message"
+    MODEL72b7fb:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "success message"
+    MODEL5d05cb:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "Error message detailing what went wrong."
+    MODEL0ac28b:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "error message"
+    MODEL44ef1f:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        status:
+          type: "integer"
+          format: "int32"
+        message:
+          type: "string"
+          description: "Error message detailing what went wrong."
+    MODEL955a3a:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "error message"
+    MODELe9c20a:
+      type: "object"
+      properties:
+        password:
+          type: "string"
+          description: "password"
+        newPassword:
+          type: "string"
+          description: "newPassword"
+    MODELc4cc1a:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "error message"
+    MODELd69e46:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "Error message detailing what went wrong."
+    MODEL1eb856:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "error message"
+    MODELc531a7:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "error message"
+    MODEL52bf6e:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "error message"
+    MODEL0bebcf:
+      type: "object"
+      properties:
+        email:
+          type: "string"
+          description: "email"
+        password:
+          type: "string"
+          description: "password"
+    MODEL296230:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "error message"
+    MODELde4138:
+      type: "object"
+      properties:
+        newDisplayName:
+          type: "string"
+          description: "newDisplayName"
+    MODEL46170a:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        status:
+          type: "integer"
+          format: "int32"
+          default: 200
+        data:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Question"
+    CodeExecutionResult:
+      required:
+      - "description"
+      - "details"
+      - "errors"
+      - "memory"
+      - "prints"
+      - "results"
+      - "statusCode"
+      - "time"
+      type: "object"
+      properties:
+        statusCode:
+          type: "string"
+          description: "HTTP status code of the response"
+        description:
+          type: "string"
+          description: "String elaborating details on the status code"
+        results:
+          type: "array"
+          description: "A list of strings that are returned from the execution of\
+            \ your code. This can be empty if your code did not produce any outputs\
+            \ or failed to compile."
+          items:
+            type: "string"
+        prints:
+          type: "array"
+          items:
+            type: "string"
+        errors:
+          type: "array"
+          description: "A list of strings that details errors that are encountered\
+            \ when running your code. This may be empty if there are no errors."
+          items:
+            type: "string"
+        time:
+          type: "number"
+          description: "Time taken to run the Lambda function"
+        memory:
+          type: "number"
+          description: "Memory used to execute the Lambda function"
+    MODELc1639c:
+      type: "object"
+      properties:
+        email:
+          type: "string"
+          description: "email"
+        password:
+          type: "string"
+          description: "password"
+        displayName:
+          type: "string"
+          description: "displayName"
+    MODELc76a41:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "error message"
+    Question:
+      required:
+      - "categories"
+      - "description"
+      - "difficulty"
+      - "title"
+      type: "object"
+      properties:
+        title:
+          type: "string"
+          description: "Title of the question (required)"
+        description:
+          type: "string"
+          description: "Description of the question (required and unique)"
+        image:
+          type: "string"
+          description: "Image associated with the question (optional)"
+          format: "binary"
+        categories:
+          type: "array"
+          description: "List of topics associated with the question (required, at\
+            \ least one topic)"
+          items:
+            type: "string"
+        difficulty:
+          type: "string"
+          description: "Difficulty level of the question (required)"
+          enum:
+          - "EASY"
+          - "MEDIUM"
+          - "HARD"
+        isDeleted:
+          type: "boolean"
+          description: "Indicates if the question is deleted (default is false)"
+          default: false
+    MODEL6b3f7b:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "error message"
+    MODELe64a59:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        status:
+          type: "integer"
+          format: "int32"
+        message:
+          type: "string"
+          description: "Error message detailing what went wrong."
+    MODEL5b14d0:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        status:
+          type: "integer"
+          format: "int32"
+          default: 200
+        data:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Question"
+    MODELca9eeb:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "error message"
+    MODEL73c89a:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "error message"
+    MODEL76146b:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        status:
+          type: "integer"
+          format: "int32"
+        data:
+          $ref: "#/components/schemas/Question"
+    MODEL403433:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "error message"
+    MODEL5d8fd9:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "success message"
+    MODEL23b348:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        status:
+          type: "integer"
+          format: "int32"
+        message:
+          type: "string"
+          description: "Error message detailing what went wrong."
+    MODELa1e3b1:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "error message"
+    MODELc8696d:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        status:
+          type: "integer"
+          format: "int32"
+        message:
+          type: "string"
+          description: "Verified question is deleted"
+    MODEL1bfe98:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        status:
+          type: "integer"
+          format: "int32"
+          default: 200
+        data:
+          $ref: "#/components/schemas/Question"
+    MODEL47bcc1:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "success message"
+    MODEL57b4fe:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "error message"
+    MODELd08b88:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        status:
+          type: "integer"
+          format: "int32"
+        data:
+          $ref: "#/components/schemas/Question"
+    MODEL24b211:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        status:
+          type: "integer"
+          format: "int32"
+          default: 200
+        data:
+          type: "array"
+          items:
+            type: "string"
+    MODELd4a771:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        status:
+          type: "integer"
+          format: "int32"
+        message:
+          type: "string"
+          description: "Error message detailing what went wrong."
+    MODEL8b3086:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "error message"
+    MODEL803475:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        status:
+          type: "integer"
+          format: "int32"
+        data:
+          $ref: "#/components/schemas/Question"
+    MODELf1bbf4:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        status:
+          type: "integer"
+          format: "int32"
+        message:
+          type: "string"
+          description: "Error message detailing what went wrong."
+    MODELacc33f:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "Error message detailing what went wrong."
+    CodeExecutionRequest:
+      required:
+      - "code"
+      - "language"
+      type: "object"
+      properties:
+        language:
+          type: "string"
+          description: "Language to execute the code in"
+          enum:
+          - "python"
+          - "java"
+          - "javascript"
+        code:
+          type: "string"
+          description: "JSON string representing code to execute"
+    MODEL638449:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "error message"
+    MODEL9e0dcb:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "success message"
+    MODELe6d2f1:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "success message"
+  securitySchemes:
+    PeerPrepJWTAuthorizer:
+      type: "apiKey"
+      name: "Authorization"
+      in: "header"
+      x-amazon-apigateway-authtype: "custom"
+      x-amazon-apigateway-authorizer:
+        authorizerUri: "arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:730335480348:function:jwtAuthoriser/invocations"
+        authorizerResultTtlInSeconds: 300
+        type: "token"
+    api_key:
+      type: "apiKey"
+      name: "x-api-key"
+      in: "header"

@@ -1,0 +1,36 @@
+.container {
+  padding: 4rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  justify-content: center;
+
+  &.error {
+    background-color: var(--mantine-color-red-1);
+  }
+
+  &.success {
+    background-color: var(--mantine-color-green-1);
+  }
+}
+
+:root[data-mantine-color-scheme="dark"] {
+  .container {
+    &.error {
+      background-color: color-mix(
+        in srgb,
+        var(--mantine-color-red-5) 60%,
+        transparent
+      );
+    }
+
+    &.success {
+      background-color: color-mix(
+        in srgb,
+        var(--mantine-color-green-5) 60%,
+        transparent
+      );
+    }
+  }
+}

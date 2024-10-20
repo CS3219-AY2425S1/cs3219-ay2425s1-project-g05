@@ -1,0 +1,49 @@
+{
+  "family": "peerprep-matching-service",
+  "containerDefinitions": [
+    {
+      "name": "matching-service",
+      "image": "asdfghjklxd/peerprep-matching-service:latest",
+      "cpu": 0,
+      "portMappings": [
+        {
+          "name": "matching-service-8002-tcp",
+          "containerPort": 8002,
+          "hostPort": 8002,
+          "protocol": "tcp",
+          "appProtocol": "http"
+        }
+      ],
+      "essential": true,
+      "environmentFiles": [],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "ulimits": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/peerprep-matching-service",
+          "mode": "non-blocking",
+          "awslogs-create-group": "true",
+          "max-buffer-size": "25m",
+          "awslogs-region": "ap-southeast-1",
+          "awslogs-stream-prefix": "ecs"
+        },
+        "secretOptions": []
+      },
+      "systemControls": []
+    }
+  ],
+  "taskRoleArn": "arn:aws:iam::730335480348:role/AmazonEC2ContainerServiceforEC2Role",
+  "executionRoleArn": "arn:aws:iam::730335480348:role/AmazonEC2ContainerServiceforEC2Role",
+  "networkMode": "bridge",
+  "volumes": [],
+  "placementConstraints": [],
+  "requiresCompatibilities": ["EC2"],
+  "cpu": "512",
+  "memory": "338",
+  "runtimePlatform": {
+    "cpuArchitecture": "ARM64",
+    "operatingSystemFamily": "LINUX"
+  }
+}

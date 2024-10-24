@@ -49,7 +49,7 @@ const ormGetQuestionsByTitleAndDifficulty = async (title, difficulty) => {
   return getQuestionsByTitleAndDifficulty(title, difficulty);
 };
 
-const ormGetDistinctCategories = async () => {
+const ormGetDistinctCategoriesId = async () => {
   return getDistinctCategories();
 };
 
@@ -63,5 +63,5 @@ export {
   ormFindQuestion,
   ormGetQuestionsByDescription,
   ormGetQuestionsByTitleAndDifficulty,
-  ormGetDistinctCategories,
+  ormGetDistinctCategoriesId,
 };

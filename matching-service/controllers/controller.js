@@ -7,6 +7,7 @@ import {
     ormFindAllPendingUsers,
     ormDeletePendingUserByDocId
 } from "../models/orm.js";
+import axios from 'axios';
 
 export async function onDisconnect(socket) {
     try {

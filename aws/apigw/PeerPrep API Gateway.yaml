@@ -7,10 +7,12 @@ servers:
 - url: "https://01678sag05.execute-api.ap-southeast-1.amazonaws.com/{basePath}"
   variables:
     basePath:
-      default: ""
+      default: "v1"
 paths:
   /api/collaboration-service/rooms:
     get:
+      tags:
+        - collaboration-service
       responses:
         default:
           description: "Default response for GET /api/collaboration-service/rooms"
@@ -24,6 +26,8 @@ paths:
         connectionType: "INTERNET"
         timeoutInMillis: 30000
     delete:
+      tags:
+        - collaboration-service
       responses:
         default:
           description: "Default response for DELETE /api/collaboration-service/rooms"
@@ -38,6 +42,8 @@ paths:
         timeoutInMillis: 30000
   /api/question-service/id/{id}:
     get:
+      tags:
+        - question-service
       operationId: "getQuestionById"
       responses:
         default:
@@ -52,6 +58,8 @@ paths:
         connectionType: "INTERNET"
         timeoutInMillis: 30000
     put:
+      tags:
+        - question-service
       operationId: "updateQuestionById"
       responses:
         default:
@@ -66,6 +74,8 @@ paths:
         connectionType: "INTERNET"
         timeoutInMillis: 30000
     delete:
+      tags:
+        - question-service
       operationId: "deleteQuestionById"
       responses:
         default:
@@ -88,6 +98,8 @@ paths:
         type: "string"
   /api/user-service/users:
     post:
+      tags:
+        - user-service
       operationId: "createUser"
       responses:
         default:
@@ -100,6 +112,8 @@ paths:
         connectionType: "INTERNET"
         timeoutInMillis: 30000
     delete:
+      tags:
+        - user-service
       operationId: "deleteUser"
       responses:
         default:
@@ -115,6 +129,8 @@ paths:
         timeoutInMillis: 30000
   /api/collaboration-service/users:
     get:
+      tags:
+        - collaboration-service
       responses:
         default:
           description: "Default response for GET /api/collaboration-service/users"
@@ -129,6 +145,8 @@ paths:
         timeoutInMillis: 30000
   /api/question-service:
     get:
+      tags:
+        - question-service
       operationId: "getAllQuestions"
       responses:
         default:
@@ -143,6 +161,8 @@ paths:
         connectionType: "INTERNET"
         timeoutInMillis: 30000
     post:
+      tags:
+        - question-service
       operationId: "createQuestion"
       responses:
         default:
@@ -158,6 +178,8 @@ paths:
         timeoutInMillis: 30000
   /api/question-service/categories:
     get:
+      tags:
+        - question-service
       operationId: "getCategories"
       responses:
         default:
@@ -173,6 +195,8 @@ paths:
         timeoutInMillis: 30000
   /api/question-service/filter:
     get:
+      tags:
+        - question-service
       operationId: "getFilteredQuestions"
       responses:
         default:
@@ -188,6 +212,8 @@ paths:
         timeoutInMillis: 30000
   /api/question-service/random:
     get:
+      tags:
+        - question-service
       operationId: "findQuestion"
       responses:
         default:
@@ -203,6 +229,8 @@ paths:
         timeoutInMillis: 30000
   /api/collaboration-service/create-room:
     post:
+      tags:
+        - collaboration-service
       responses:
         default:
           description: "Default response for POST /api/collaboration-service/create-room"
@@ -217,6 +245,8 @@ paths:
         timeoutInMillis: 30000
   /api/collaboration-service/deregister:
     post:
+      tags:
+        - collaboration-service
       responses:
         default:
           description: "Default response for POST /api/collaboration-service/deregister"
@@ -231,6 +261,8 @@ paths:
         timeoutInMillis: 30000
   /api/collaboration-service/register:
     post:
+      tags:
+        - collaboration-service
       responses:
         default:
           description: "Default response for POST /api/collaboration-service/register"
@@ -245,6 +277,8 @@ paths:
         timeoutInMillis: 30000
   /api/run-service/execute:
     post:
+      tags:
+        - run-service
       responses:
         default:
           description: "Default response for POST /api/run-service/execute"
@@ -259,6 +293,8 @@ paths:
         timeoutInMillis: 30000
   /api/user-service/users/login:
     post:
+      tags:
+        - user-service
       operationId: "login"
       responses:
         default:
@@ -272,6 +308,8 @@ paths:
         timeoutInMillis: 30000
   /api/user-service/users/logout:
     post:
+      tags:
+        - user-service
       operationId: "logout"
       responses:
         default:
@@ -287,6 +325,8 @@ paths:
         timeoutInMillis: 30000
   /api/user-service/users/changeDisplayName:
     put:
+      tags:
+        - user-service
       operationId: "changeDisplayName"
       responses:
         default:
@@ -302,6 +342,8 @@ paths:
         timeoutInMillis: 30000
   /api/user-service/users/changePassword:
     put:
+      tags:
+        - user-service
       operationId: "changePassword"
       responses:
         default:

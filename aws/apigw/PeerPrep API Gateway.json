@@ -10,7 +10,7 @@
       "url": "https://01678sag05.execute-api.ap-southeast-1.amazonaws.com/{basePath}",
       "variables": {
         "basePath": {
-          "default": ""
+          "default": "v1"
         }
       }
     }

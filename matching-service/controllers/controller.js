@@ -7,6 +7,7 @@ import {
     ormFindAllPendingUsers,
     ormDeletePendingUserByDocId
 } from "../models/orm.js";
+import axios from 'axios';
 
 export async function onDisconnect(socket) {
     try {
@@ -143,12 +144,31 @@ export async function onCreateMatch(socket, data, io) {
             console.log(`Common difficulties: ${commonDifficulties}`);
             console.log(`Common categories: ${commonCategories}`);
 
+            // get question first
+            const resp = await axios.get(
+              process.env.QUESTION_SERVICE_ENDPOINT ??
+                'http://question-service:8003/api/question-service/random',
+              {
+                params: {
+                  categoriesId: commonCategories,
+                  difficulty: commonDifficulties,
+                },
+              }
+            );
+
+            const questionInResponse = resp.data['data']['question'];
+            if (questionInResponse === null || questionInResponse === undefined) {
+              console.log('Quesiton is missing');
+              throw new Error('Unable to query for question')
+            }
+
             // Create match object
             const matchObject = {
                 matchId: matchedUser._id.toString(),
                 userIds: [userId, matchedUser.userId],
                 difficulties: commonDifficulties,
                 categoriesId: commonCategories,
+                question: questionInResponse
             }
             console.log(`Match object:`);
             console.log(matchObject);

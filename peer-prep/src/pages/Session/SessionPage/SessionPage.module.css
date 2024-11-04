@@ -1,0 +1,32 @@
+/* .wrapper {
+  min-height: calc(100vh - 60px - var(--mantine-spacing-md));
+  align-items: flex-start;
+
+  padding: 20rem;
+  padding-top: 2rem;
+
+  flex-direction: row;
+  gap: 2rem;
+} */
+
+.wrapper {
+  padding: 2rem 0;
+  min-height: 100%;
+}
+
+.mainContent {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  width: 1200px;
+}
+
+.paper {
+  padding: 1rem;
+}
+
+.infoPaper {
+  padding: 1rem;
+  background-color: #f9f9f9;
+  width: 300px;
+}

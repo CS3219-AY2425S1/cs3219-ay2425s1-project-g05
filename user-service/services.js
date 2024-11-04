@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { connect } from 'mongoose';
 
 export async function connectToDB() {
-    let mongoDBUri = process.env.MONGO_PROD_URI;
+    let mongoDBUri = process.env.MONGO_PROD_URI?.trim();
     await connect(mongoDBUri);
 }
 

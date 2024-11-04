@@ -10,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.1.0",
     "@mantine/core": "^7.13.2",
     "@mantine/hooks": "^7.13.2",
+    "@mantine/modals": "^7.13.4",
     "@mantine/notifications": "^7.13.2",
     "@mantine/tiptap": "^7.13.2",
     "@monaco-editor/react": "^4.6.0",
@@ -27,7 +29,10 @@
     "react-dom": "^18.3.1",
     "react-quill": "^2.0.0",
     "react-router-dom": "^6.26.2",
-    "socket.io-client": "^4.8.0"
+    "socket.io-client": "^4.8.0",
+    "y-monaco": "^0.1.6",
+    "y-websocket": "^2.0.4",
+    "yjs": "^13.6.20"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

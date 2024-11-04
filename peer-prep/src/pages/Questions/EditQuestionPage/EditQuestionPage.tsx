@@ -15,6 +15,9 @@ import {
   Center,
   Divider,
   Space,
+  Box,
+  Group,
+  Modal,
 } from "@mantine/core";
 import RichTextEditor from "../../../components/Questions/RichTextEditor/RichTextEditor";
 import CodeEditorWithLanguageSelector from "../../../components/Questions/LanguageSelector/LanguageSelector";
@@ -28,12 +31,14 @@ import {
 } from "../../../types/question";
 import useApi, { SERVICE, ServerResponse } from "../../../hooks/useApi";
 import { notifications } from "@mantine/notifications";
+import { useDisclosure } from "@mantine/hooks";
+import { convertToCombinedCategoryId } from "../../../utils/utils";
 
 export default function EditQuestionPage() {
   const { id } = useParams<{ id: string }>();
   const [name, setName] = useState("");
   const [difficulty, setDifficulty] = useState<string | null>(null);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categoriesIdString, setCategoriesIdString] = useState<string[]>([]);
   const [descriptionText, setDescriptionText] = useState<string>("");
   const [descriptionHtml, setDescriptionHtml] = useState<string>("");
   const [solution, setSolution] = useState("");
@@ -42,19 +47,9 @@ export default function EditQuestionPage() {
   const [testCases, setTestCases] = useState<TestCase[]>([]);
 
   // For now, to be changed once backend sends over fixed categories
-  const dummyCategories = [
-    { value: "ARRAYS", label: "Arrays" },
-    { value: "ALGORITHMS", label: "Algorithms" },
-    { value: "DATABASES", label: "Databases" },
-    { value: "DATA STRUCTURES", label: "Data Structures" },
-    { value: "BRAINTEASER", label: "Brainteaser" },
-    { value: "STRINGS", label: "Strings" },
-    { value: "BIT MANIPULATION", label: "Bit Manipulation" },
-    { value: "RECURSION", label: "Recursion" },
-  ];
   const [fetchedCategories, setFetchedCategories] = useState<
     { value: string; label: string }[]
-  >(dummyCategories);
+  >([]);
 
   const navigate = useNavigate();
 
@@ -67,9 +62,9 @@ export default function EditQuestionPage() {
 
   useEffect(() => {
     if (typeof id === "string") {
-      fetchQuestionDetails(id);
-      // to be uncommented once backend sends over fixed categories
-      // fetchCategories();
+      fetchCategories().then(() => {
+        fetchQuestionDetails(id);
+      });
     }
   }, [id]);
 
@@ -85,7 +80,7 @@ export default function EditQuestionPage() {
       const question = response.data.question;
       setName(question.title);
       setDifficulty(question.difficulty);
-      setCategories(question.categories);
+      setCategoriesIdString(question.categoriesId.map(String));
       setDescriptionText(question.description.descriptionText);
       setDescriptionHtml(question.description.descriptionHtml);
       setTemplateCode(question.templateCode);
@@ -108,13 +103,22 @@ export default function EditQuestionPage() {
         SERVICE.QUESTION
       );
 
-      const categories = response.data.categories;
-      const transformedCategories = categories.map((category: string) => ({
-        value: category.toUpperCase(),
+      const categories = response.data.categories.categories || [];
+      const categoriesId = response.data.categories.categoriesId || [];
+
+      const convertedCategories = convertToCombinedCategoryId(
+        categories,
+        categoriesId
+      );
+      const transformedCategories = convertedCategories.map((c) => ({
+        value: c.id.toString(),
         label:
-          category.charAt(0).toUpperCase() + category.slice(1).toLowerCase(),
+          c.category.charAt(0).toUpperCase() +
+          c.category.slice(1).toLowerCase(),
       }));
       setFetchedCategories(transformedCategories);
+
+      return true;
     } catch (error: any) {
       console.error("Error fetching categories", error);
       notifications.show({
@@ -132,6 +136,7 @@ export default function EditQuestionPage() {
       ...rest,
     }));
 
+    console.log(`NOTE: ${categoriesIdString} << selected categories`);
     try {
       const response = await fetchData<ServerResponse<QuestionResponseData>>(
         `/question-service/id/${id}`,
@@ -144,7 +149,7 @@ export default function EditQuestionPage() {
           body: JSON.stringify({
             title: name,
             description: { descriptionText, descriptionHtml },
-            categories,
+            categoriesId: categoriesIdString.map(Number),
             difficulty,
             solutionCode: solution,
             templateCode,
@@ -196,6 +201,8 @@ export default function EditQuestionPage() {
     }
   };
 
+  const [opened, { open, close }] = useDisclosure(false);
+
   const addTestCase = () => {
     setTestCases([
       ...testCases,
@@ -218,8 +225,32 @@ export default function EditQuestionPage() {
     setTestCases(updatedTestCases);
   };
 
+  const canSubmit =
+    name &&
+    difficulty &&
+    categoriesIdString.length &&
+    descriptionText &&
+    descriptionHtml &&
+    solution &&
+    link &&
+    testCases.length;
+
   return (
     <Container mt={48}>
+      <Modal opened={opened} onClose={close} title="Confirm deletion" centered>
+        <Stack>
+          <Box py="lg">Are you sure you want to delete this question?</Box>
+          <Divider />
+          <Group justify="end">
+            <Button size="sm" variant="subtle" color="gray" onClick={close}>
+              Cancel
+            </Button>
+            <Button size="sm" color="red" onClick={() => handleDelete()}>
+              Delete
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
       <h1>Edit Question</h1>
       <form onSubmit={handleSubmit}>
         <TextInput
@@ -240,32 +271,35 @@ export default function EditQuestionPage() {
         <MultiSelect
           mt={8}
           label="Categories"
-          value={categories}
-          onChange={(value: string[]) => setCategories(value)}
+          value={categoriesIdString}
+          onChange={(value: string[]) => setCategoriesIdString(value)}
           data={fetchedCategories}
           multiple
           required
         />
-        
+
         <Space h="8" />
-        <RichTextEditor 
-          content={descriptionHtml} 
-          onContentChange={(textValue: string, htmlvalue: string) => { setDescriptionText(textValue); setDescriptionHtml(htmlvalue); }} 
+        <RichTextEditor
+          content={descriptionHtml}
+          onContentChange={(textValue: string, htmlvalue: string) => {
+            setDescriptionText(textValue);
+            setDescriptionHtml(htmlvalue);
+          }}
         />
-        
+
         <Space h="12" />
-        <CodeEditorWithLanguageSelector 
+        <CodeEditorWithLanguageSelector
           label="Solution Code"
-          code={solution} 
-          onCodeChange={setSolution} 
+          code={solution}
+          onCodeChange={setSolution}
           required={true}
         />
 
         <Space h="12" />
-        <CodeEditorWithLanguageSelector 
+        <CodeEditorWithLanguageSelector
           label="Template Code"
-          code={templateCode} 
-          onCodeChange={setTemplateCode} 
+          code={templateCode}
+          onCodeChange={setTemplateCode}
           required={false}
         />
 
@@ -285,16 +319,12 @@ export default function EditQuestionPage() {
         <Stack>
           {testCases.map((testCase, index) => (
             <Card key={index} shadow="sm" padding="lg" radius="md">
-              <CodeEditorWithLanguageSelector 
+              <CodeEditorWithLanguageSelector
                 label={`Test Code ${index + 1}`}
                 code={testCase.testCode}
                 onCodeChange={(value) =>
-                  handleTestCaseChange(
-                    index,
-                    "testCode",
-                    value
-                  )
-                } 
+                  handleTestCaseChange(index, "testCode", value)
+                }
                 required={false}
                 height="130px"
               />
@@ -328,35 +358,31 @@ export default function EditQuestionPage() {
                     )
                   }
                 />
-                <Button color="red" onClick={() => removeTestCase(index)}>
+                <Button
+                  color="red"
+                  variant="light"
+                  onClick={() => removeTestCase(index)}
+                >
                   Remove Test Case
                 </Button>
               </Flex>
             </Card>
           ))}
-          <Button
-            onClick={addTestCase}
-            style={{ width: "fit-content", marginTop: "8px" }}
-          >
-            Add Test Case
-          </Button>
+          <Flex justify={"right"}>
+            <Button variant="light" onClick={addTestCase}>
+              Add Test Case
+            </Button>
+          </Flex>
         </Stack>
 
         <Divider my="md" />
 
-        <Center>
-          <Button type="submit" style={{ marginTop: "12px" }}>
+        <Center mb={"4rem"}>
+          <Button type="submit" disabled={!canSubmit}>
             Update Question
           </Button>
-          <Button
-            type="button"
-            style={{
-              marginTop: "12px",
-              marginLeft: "8px",
-              backgroundColor: "red",
-            }}
-            onClick={handleDelete}
-          >
+          <Space w="1rem" />
+          <Button type="button" color="red" onClick={open}>
             Delete Question
           </Button>
         </Center>

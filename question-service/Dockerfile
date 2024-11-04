@@ -9,6 +9,7 @@
 FROM node:20
 
 # expose 8003 port for access to the container
+ENV PORT=8003
 EXPOSE 8003
 
 # Set work dir to prevent retarts

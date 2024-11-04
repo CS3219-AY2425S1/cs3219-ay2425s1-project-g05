@@ -234,7 +234,7 @@ export function Navbar() {
                       </Link>
                     </Menu.Item>
 
-                    <Menu.Item
+                    {/* <Menu.Item
                       leftSection={
                         <IconMessageCircle
                           style={{ width: rem(14), height: rem(14) }}
@@ -242,7 +242,7 @@ export function Navbar() {
                       }
                     >
                       Messages
-                    </Menu.Item>
+                    </Menu.Item> */}
                     {/* <Menu.Item
                   leftSection={
                     <IconPhoto style={{ width: rem(14), height: rem(14) }} />
@@ -251,7 +251,7 @@ export function Navbar() {
                   Gallery
                 </Menu.Item> */}
 
-                    <Menu.Item
+                    {/* <Menu.Item
                       leftSection={
                         <IconSearch
                           style={{ width: rem(14), height: rem(14) }}
@@ -264,9 +264,9 @@ export function Navbar() {
                       }
                     >
                       Search
-                    </Menu.Item>
+                    </Menu.Item> */}
 
-                    <Menu.Divider />
+                    {/* <Menu.Divider />
 
                     <Menu.Item
                       leftSection={
@@ -276,7 +276,7 @@ export function Navbar() {
                       }
                     >
                       Settings
-                    </Menu.Item>
+                    </Menu.Item> */}
                     <Menu.Divider />
                     {/* <Menu.Label>Danger zone</Menu.Label>
                 <Menu.Item

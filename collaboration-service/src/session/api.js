@@ -79,6 +79,7 @@ const getRoomDetails = async (request, response, next) => {
   try {
     const { roomId } = request.query;
     const users = LocalClient.getUserByDoc(roomId);
+    console.log('users:', users);
 
     if (users === null) {
       throw new RoomNotFoundError('Room cannot be found');
@@ -151,6 +152,7 @@ const registerUser = async (request, response, next) => {
       );
     }
 
+    console.log('registering user in api.js:', userId, roomId);
     LocalClient.add(userId, roomId);
 
     // if user is registered to an empty room, we create a room ID and return it

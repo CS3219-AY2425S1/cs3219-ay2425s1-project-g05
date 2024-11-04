@@ -23,6 +23,7 @@ export type Question = {
   title: string;
   description: { descriptionText: string, descriptionHtml: string };
   categories: string[];
+  categoriesId: number[];
   difficulty: Complexity;
   isDeleted: boolean;
   solutionCode: string;
@@ -39,7 +40,15 @@ export interface QuestionResponseData {
 }
 
 export interface CategoryResponseData {
-  categories: string[];
+  categories: {
+    categoriesId: number[]
+    categories: string[]
+  }
+}
+
+export type Category = {
+  category: string,
+  id: number | string
 }
 
 export const SAMPLE_QUESTIONS: any[] = [{

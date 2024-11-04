@@ -13,6 +13,12 @@ export async function socketHandler(io) {
 
         // Create match event
         socket.on("create-match", async (data) => onCreateMatch(socket, data, io));
+
+        // Test event
+        socket.on("test", (data) => {
+            console.log(`Test event received: ${data}`);
+            socket.emit("test", `Test event received with data: ${data}`);
+        });
     });
 
 }

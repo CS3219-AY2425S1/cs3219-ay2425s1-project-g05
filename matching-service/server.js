@@ -10,13 +10,13 @@ import { socketHandler } from './controllers/socketHandler.js';
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
-  path: '/api/matching-service',
-  cors: {
-    origin: allowedOrigins, // set cors origin to frontend
-    methods: ['GET', 'POST'],
-    credentials: true,
-  },
-  transports: ['websocket'],
+    path: '/api/matching-service',
+    cors: {
+        origin: allowedOrigins, // set cors origin to frontend
+        methods: ['GET', 'POST'],
+        credentials: true,
+    },
+    transports: ['websocket'],
 });
 
 // Setup environment variables
@@ -32,19 +32,25 @@ socketHandler(io);
 
 // Test Route for Health Checks
 app.get('/healthz', (req, res) => {
-  res
-    .status(200)
-    .json({ message: 'Connected to /healthz route of matching-service' });
+    res
+        .status(200)
+        .json({ message: 'Connected to /healthz route of matching-service' });
 });
 
-// Connect to DB, then listen at port
-await connectToDB()
-  .then(() => {
-    console.log('MongoDB Connected!');
+// If in test mode, just listen at port
+if (process.env.NODE_ENV === 'test') {
+    console.log("In test mode, don't connect to prod DB")
     server.listen(process.env.PORT);
-    console.log(`Matching service listening at port ${process.env.PORT}`);
-  })
-  .catch((error) => {
-    console.log('Failed to connect to DB');
-    console.log(error);
-  });
+    console.log(`Matching service listening at port ${process.env.PORT}`)
+} else {
+    await connectToDB().then(() => {
+        console.log("MongoDB Connected!");
+        server.listen(process.env.PORT);
+        console.log(`Matching service listening at port ${process.env.PORT}`)
+    }).catch((error) => {
+        console.log("Failed to connect to DB");
+        console.log(error);
+    });
+}
+
+export { app, server };

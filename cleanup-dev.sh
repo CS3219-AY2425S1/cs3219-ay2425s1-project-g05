@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # List of ports to clean up
-ports=(5173 8000 8001 8002 8003 8004)
+ports=(5173 8000 8001 8002 8003 8004 8005)
 
 # Loop through each port and clean it up
 for port in "${ports[@]}"; do

@@ -29,6 +29,7 @@ import ReadQuestionPage from "./pages/Questions/ReadQuestionPage/ReadQuestionPag
 import SessionPage from "./pages/Session/SessionPage/SessionPage.tsx";
 
 import "@fontsource/inter";
+import TempSessionPage from "./pages/Session/Temp/TempSessionPage.tsx";
 
 const router = createBrowserRouter([
   {

@@ -1,11 +1,11 @@
-import * as Y from 'yjs';
-import { WebsocketProvider } from 'y-websocket';
-import { MonacoBinding } from 'y-monaco';
+import { Doc } from "yjs";
+import { WebsocketProvider } from "y-websocket";
+import { MonacoBinding } from "y-monaco";
 
-import React, { useEffect, useMemo, useState } from 'react';
-import Editor from '@monaco-editor/react';
+import React, { useEffect, useMemo, useState } from "react";
+import Editor from "@monaco-editor/react";
 
-import './CollabCodeEditor.module.css';
+import "./CollabCodeEditor.module.css";
 
 /**
  * Generate a random colour. Adapted from https://css-tricks.com/snippets/javascript/random-hex-color/
@@ -39,12 +39,12 @@ export default function CodeEditor({
   endpoint,
   room,
   user,
-  theme = 'light',
-  height = '90vh',
-  defaultValue = '# Write your code here',
-  language = 'python',
+  theme = "light",
+  height = "90vh",
+  defaultValue = "# Write your code here",
+  language = "python",
 }: CodeEditorProps) {
-  const doc = useMemo(() => new Y.Doc(), []);
+  const doc = useMemo(() => new Doc(), []);
   const [editor, setEditor] = useState(null);
   const [provider, setProvider] = useState(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -54,7 +54,7 @@ export default function CodeEditor({
     // create the params
     const params = {
       templateCode: defaultValue,
-      userId: user
+      userId: user,
     };
 
     const provider = new WebsocketProvider(endpoint, room, doc, {
@@ -79,7 +79,7 @@ export default function CodeEditor({
     const colour = getColour();
     const user = name + colour;
 
-    awareness.setLocalStateField('user', {
+    awareness.setLocalStateField("user", {
       name: user,
       color: `#${colour}`,
     });
@@ -103,12 +103,16 @@ export default function CodeEditor({
       height={height}
       theme={theme}
       defaultValue={defaultValue}
-      defaultLanguage='python'
+      defaultLanguage="python"
       language={language}
       onMount={(editor) => {
         setEditor(editor);
       }}
-      options={{padding: {top: 12, bottom: 12}, scrollBeyondLastLine: false, minimap: {enabled: false}}}
+      options={{
+        padding: { top: 12, bottom: 12 },
+        scrollBeyondLastLine: false,
+        minimap: { enabled: false },
+      }}
     />
   );
 }

@@ -34,6 +34,13 @@ services:
     ports:
       - '8004:8004'
 
+  communication-service: 
+    build:
+      context: ./communication-service
+      dockerfile: Dockerfile
+    ports:
+      - '8005:8005'
+
   frontend:
     build:
       context: ./peer-prep

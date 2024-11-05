@@ -170,6 +170,10 @@ const deleteQuestionById = async (req, res, next) => {
   const { id } = req.params;
 
   try {
+    if (!mongoose.isValidObjectId(id)) {
+        throw new NotFoundError("Question not found");
+    }
+
     const questionToDelete = await _getQuestionById(id);
     if (questionToDelete.length === 0) {
       throw new NotFoundError("Question not found");
@@ -207,6 +211,10 @@ const updateQuestionById = async (req, res, next) => {
   const { description, title, difficulty, categoriesId, testCases } = req.body;
 
   try {
+    if (!mongoose.isValidObjectId(id)) {
+        throw new NotFoundError("Question to update cannot be found");
+    }
+
     // CHECK WHETHER QUESTION TO UPDATE EXISTS (AND NOT DELETED)
     const questionToUpdate = await _getQuestionById(id);
 
@@ -480,6 +488,10 @@ const getTestCasesWithId = async (req, res, next) => {
   const { id } = req.params;
 
   try {
+    if (!mongoose.isValidObjectId(id)) {
+        throw new NotFoundError("Question not found");
+    }
+
     let foundQuestion = await _getQuestionById(id);
 
     if (foundQuestion.length === 0) {

@@ -44,7 +44,7 @@ class LocalClient {
   }
 
   static putQuestion(doc, question) {
-    if (typeof doc !== 'string' || typeof question !== 'string') {
+    if (typeof doc !== 'string') {
       throw new Error('Room ID or question must be of type string');
     }
 

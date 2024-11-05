@@ -333,7 +333,10 @@ const setupWSConnection = (
 
   let doc = null;
 
-  if (LocalClient.getUserByDoc(LocalClient.getDocByUser(userId)).length >= 2) {
+  if (
+    (LocalClient.getUserByDoc(LocalClient.getDocByUser(userId)) ?? []).length >=
+    2
+  ) {
     // close the connection
     console.error('Unable to add user to room as it is full');
     req.close();

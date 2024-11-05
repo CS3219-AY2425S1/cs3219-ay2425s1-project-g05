@@ -15,6 +15,7 @@ import {
   ormGetQuestionsByTitleAndDifficulty as _getQuestionByTitleAndDifficulty,
   ormGetDistinctCategoriesId as _getDistinctCategoriesId,
 } from "../models/orm.js";
+import mongoose from "mongoose";
 
 const createQuestion = async (req, res, next) => {
   try {
@@ -115,6 +116,10 @@ const getQuestionById = async (req, res, next) => {
   const { id } = req.params;
 
   try {
+    if (!mongoose.isValidObjectId(id)) {
+        throw new NotFoundError("Question not found");
+    }
+
     let foundQuestion = await _getQuestionById(id);
 
     if (foundQuestion.length === 0) {

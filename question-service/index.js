@@ -25,18 +25,25 @@ app.use(errorHandler);
 
 // Test Route for Health Checks
 app.get("/healthz", (req, res) => {
-  res.status(200).json({ message: "Connected to /healthz route of question-service" });
+    res.status(200).json({ message: "Connected to /healthz route of question-service" });
 });
 
-// MongoDB connection
-mongoose.connect(process.env.DEV_URI, {});
+// Connect if not in test environment
+if (process.env.NODE_ENV === "test") {
+    console.log("In test environment, skipping MongoDB connection");
+} else {
+    // MongoDB connection
+    mongoose.connect(process.env.DEV_URI, {});
 
-const connection = mongoose.connection;
-connection.once("open", () => {
-  console.log("MongoDB connection established successfully");
-});
-connection.on("error", (err) => {
-  console.log("MongoDB error: " + err);
-});
+    const connection = mongoose.connection;
+    connection.once("open", () => {
+        console.log("MongoDB connection established successfully");
+    });
+    connection.on("error", (err) => {
+        console.log("MongoDB error: " + err);
+    });
+}
 
 app.listen(port, () => console.log(`question-service listening on port ${port}`));
+
+export default app;

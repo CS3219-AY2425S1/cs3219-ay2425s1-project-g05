@@ -122,11 +122,8 @@ const joiAttemptSchema = Joi.object({
       "any.required": "Solution code is required",
     }),
   }),
-  testCaseResults: Joi.array().items(joiTestCaseResultSchema).min(1).required().messages({
-    "array.base": "testCaseResults must be an array",
-    "array.min": "At least one testCaseResult is required",
-    "any.required":
-      "testCaseResults are required",
+  testCaseResults: Joi.array().items(joiTestCaseResultSchema).optional().messages({
+    "array.base": "testCaseResults must be an array"
   }),
   roomId: Joi.string().trim().min(1).required().messages({
     "string.empty": "Room ID cannot be empty",

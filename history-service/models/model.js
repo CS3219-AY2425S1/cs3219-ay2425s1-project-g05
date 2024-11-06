@@ -96,20 +96,13 @@ const attemptSchema = new Schema({
   },
   notes: {
     type: String,
-    required: [true, "Notes is required"],
   },
   attemptCode: {
     type: String,
     required: [true, "Attempt code is required"],
   },
   testCaseResults: {
-    type: [testCaseResultSchema],
-    required: [true, "Test cases results are required"],
-    validate: {
-      validator: (value) => {
-        return value.length > 0;
-      },
-    },
+    type: [testCaseResultSchema]
   },
   createdAt: {
     type: Date,

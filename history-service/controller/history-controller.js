@@ -92,7 +92,8 @@ const updateAttempt = async (req, res, next) => {
     if (!existingAttempt) {
       throw new NotFoundError("Attempt not found");
     }
-    const attemptWithUpdatedTime = { ...attempt, updatedAt: new Date() };
+    const updatedAt = existingAttempt.notes !== attempt.notes ? new Date(): existingAttempt.updatedAt;
+    const attemptWithUpdatedTime = { ...attempt, updatedAt: updatedAt};
     const updatedAttempt = await ormUpdateAttempt(userId, roomId, attemptWithUpdatedTime);
     return res.status(200).json({
       statusCode: 200,

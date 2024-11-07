@@ -25,7 +25,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import CodeEditor from "../../../components/CollabCodeEditor/CollabCodeEditor";
 import AvatarWithDetailsButton from "../../../components/AvatarIcon/AvatarWithDetailsButton";
 import { IconChevronRight } from "@tabler/icons-react";
-import { Question } from "../../../types/question";
+import { Question, TestCaseResult } from "../../../types/question";
 import { useLocalStorage, useSessionStorage } from "@mantine/hooks";
 import { modals, ModalsProvider } from "@mantine/modals";
 import TextChatWidget from "../../../components/Communication/Text/TextChatWidget";
@@ -33,6 +33,8 @@ import { notifications } from "@mantine/notifications";
 import TestCasesWrapper from "../../../components/TestCases/TestCasesWrapper";
 import { useAuth } from "../../../hooks/useAuth";
 import { UserResponseData } from "../../../types/user";
+
+import { TestCaseResult as TestCaseResultDb } from "../../../types/attempts";
 
 type QuestionCategory =
   | "ALGORITHMS"
@@ -58,23 +60,6 @@ interface CheckRoomDetailsResponse {
     users: String[];
   };
 }
-
-const dummyTestCaseResults = [
-  {
-    testCaseId: "first testcase",
-    isPassed: true,
-    input: "first qn",
-    output: "xxx",
-    expectedOutput: "first ans",
-  },
-  {
-    testCaseId: "sec testcase",
-    isPassed: true,
-    input: "first qn",
-    output: "xxx",
-    expectedOutput: "second ans",
-  },
-];
 
 const LOCAL_WEBSOCKET = import.meta.env.VITE_COLLAB_WS_URL_LOCAL;
 
@@ -129,7 +114,7 @@ export default function SessionPage() {
 
   const [templateCode, setTemplateCode] = useState(question.templateCode);
   const [attemptCode, setAttemptCode] = useState(question.templateCode);
-  const [testCaseResults, setTestCaseResults] = useState(dummyTestCaseResults);
+  const [latestResults, setLatestResults] = useState<TestCaseResult[]>([]);
 
   // when true, don't show modal when # users in room < 2
   // const [isWaitingForRejoin, setIsWaitingForRejoin] = useState(false);
@@ -325,6 +310,23 @@ export default function SessionPage() {
       } = question;
 
       console.log(currentValueRef);
+      console.log("LOG: latestResults = ", { latestResults });
+
+      const results: TestCaseResultDb[] = [];
+      latestResults.forEach((result) => {
+        results.push({
+          testCaseId: result.testCaseDetails.testCaseId,
+          expectedOutput: result.testCaseDetails.expectedOutput || " ",
+          input: result.testCaseDetails.input,
+          isPassed: result.isPassed,
+          output: result.stdout || " ",
+          error: result.stderr || " ",
+          meta: {
+            memory: result.memory,
+            time: result.time,
+          },
+        });
+      });
       fetchData<ServerResponse<HistoryResponse>>(
         `/history-service/attempt`,
         SERVICE.HISTORY,
@@ -338,12 +340,15 @@ export default function SessionPage() {
             roomId,
             notes: " ",
             attemptCode: currentValueRef.current,
-            testCaseResults,
+            testCaseResults:
+              // dummyTestCaseResults,
+              results,
             question: questionForAttempt,
           }),
         }
       ).then((response) => {
         console.log("Attempt created", response);
+
         const attempt = response.data.attempt;
         console.log("Attempt", attempt);
 
@@ -482,8 +487,10 @@ export default function SessionPage() {
               channelId={channelId}
               questionId={question._id}
               currentValueRef={currentValueRef}
-              otherUserId={otherUserId}
               userId={user._id}
+              otherUserId={otherUserId}
+              latestResults={latestResults}
+              setLatestResults={setLatestResults}
             />
           </Stack>
         </Flex>

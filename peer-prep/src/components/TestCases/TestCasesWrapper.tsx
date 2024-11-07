@@ -49,6 +49,9 @@ type TestCasesWrapperProps = {
   currentValueRef: React.MutableRefObject<string>;
   otherUserId: string;
   userId: string;
+
+  latestResults: TestCaseResult[];
+  setLatestResults: React.Dispatch<React.SetStateAction<TestCaseResult[]>>;
 };
 
 const STATUS_PARTIAL = 206;
@@ -65,6 +68,9 @@ export default function TestCasesWrapper({
 
   userId,
   otherUserId,
+
+  latestResults,
+  setLatestResults,
 }: TestCasesWrapperProps) {
   const [currentTestCase, setCurrentTestCase] = useState<TestCase | null>(
     testCases[0]
@@ -90,7 +96,6 @@ export default function TestCasesWrapper({
   const [isError, setIsError] = useState<boolean>(false);
 
   // array of tries for each attempt
-  const [latestResults, setLatestResults] = useState<TestCaseResult[]>([]);
   // const [allResults, setAllResults] = useState<TestCaseResult[][]>([]);
   const [attemptCodeMap, setAttemptCodeMap] = useState<{
     [attempt: number]: { code: string; results: TestCaseResult[] };
@@ -304,6 +309,237 @@ export default function TestCasesWrapper({
           Run all testcases{" "}
         </Button>
       </Group>
+      <TestCasesDisplay
+        attempt={attempt}
+        attemptCodeMap={attemptCodeMap}
+        isRunning={isRunning}
+        latestResults={latestResults}
+        testCases={testCases}
+      />
+      {/* <>
+        <Group>
+          {testCases.map((testCase, index) => (
+            <Button
+              key={index}
+              size="sm"
+              color={getTestCaseColour(testCase._id.toString())}
+              radius={"sm"}
+              variant={
+                testCase._id === currentTestCase?._id ? "filled" : "light"
+              }
+              onClick={() => onTestCaseChange(testCase._id)}
+              loading={
+                isRunning &&
+                latestResults.find(
+                  (result) =>
+                    result.testCaseDetails.testCaseId ===
+                    testCase._id.toString()
+                ) === undefined
+              }
+            >
+              {index + 1}
+            </Button>
+          ))}
+        </Group>
+        {currentTestCase && currentTestCase.isPublic ? (
+          <Box className={classes.testCaseDisplay}>
+            {getTestCaseResult(currentTestCase._id.toString(), 1) && (
+              <Group>
+                <Badge
+                  variant="dot"
+                  color={getTestCaseColour(currentTestCase._id.toString())}
+                  size="xl"
+                  radius="xs"
+                >
+                  {getTestCaseResult(currentTestCase._id.toString(), 1).isPassed
+                    ? "Passed"
+                    : "Failed"}
+                </Badge>
+                <Space flex={1} />
+                <Group>
+                  <Badge
+                    leftSection={<IconDatabase width="16px" height="16px" />}
+                    radius="sm"
+                    variant="light"
+                    size="lg"
+                    styles={{
+                      label: {
+                        // get rid of uppercase
+                        textTransform: "none",
+                      },
+                    }}
+                    color={colorScheme === "dark" ? "gray" : "gray"}
+                  >
+                    {kBtoMb(
+                      getTestCaseResult(currentTestCase._id.toString(), 1)
+                        .memory
+                    )}{" "}
+                    MB
+                  </Badge>
+                  <Badge
+                    leftSection={
+                      <IconHourglassEmpty width="16px" height="16px" />
+                    }
+                    radius="sm"
+                    variant="light"
+                    size="lg"
+                    styles={{
+                      label: {
+                        // get rid of uppercase
+                        textTransform: "none",
+                      },
+                    }}
+                    color={colorScheme === "dark" ? "gray" : "gray"}
+                  >
+                    {secondsToMsIfappropriate(
+                      Number(
+                        getTestCaseResult(currentTestCase._id.toString(), 1)
+                          .time
+                      )
+                    )}
+                  </Badge>
+                </Group>
+              </Group>
+            )}
+            <SimpleGrid cols={{ base: 1, md: 2 }} mt="lg">
+              <Box mb={"md"}>
+                <Text style={{ fontWeight: "700" }}> Test Program </Text>
+                <Code block mt={"xs"} className={classes.codeBlock}>
+                  {currentTestCase.testCode}
+                </Code>
+              </Box>
+              <Box>
+                <Text style={{ fontWeight: "700" }}> Expected Output </Text>
+                <Code block mt="xs" className={classes.codeBlock}>
+                  {currentTestCase.expectedOutput}
+                </Code>
+              </Box>
+            </SimpleGrid>
+
+            <Box>
+              <Text style={{ fontWeight: "700" }}> Actual output: </Text>
+            </Box>
+            <Code
+              block
+              className={classes.codeBlock}
+              style={{
+                outline:
+                  getTestCaseResult(currentTestCase._id.toString(), 1) &&
+                  `1.5px solid var(--mantine-color-${getTestCaseColour(
+                    currentTestCase._id.toString()
+                  )}-9)`,
+              }}
+              color={
+                colorScheme === "light" &&
+                `${getTestCaseColour(currentTestCase._id.toString())}.1`
+              }
+            >
+              {getTestCaseResult(currentTestCase._id.toString(), 1) ===
+              undefined
+                ? "No output yet, please run the test case to view output"
+                : getTestCaseResult(currentTestCase._id.toString(), 1).stdout}
+            </Code>
+
+            <Box mt={"xs"}>
+              <Text style={{ fontWeight: "700" }}> Error logs: </Text>
+            </Box>
+            <Code block className={classes.codeBlock}>
+              {getTestCaseResult(currentTestCase._id.toString(), 1) ===
+              undefined
+                ? "No output yet, please run the test case to view output"
+                : getTestCaseResult(currentTestCase._id.toString(), 1).stderr}
+            </Code>
+
+            <Accordion variant="separated" mt="md">
+              <Accordion.Item value={"code"}>
+                <Accordion.Control>
+                  <b>Submitted code</b>
+                </Accordion.Control>
+                <Accordion.Panel>
+                  <CodeHighlight
+                    code={attemptCodeMap[attempt]?.code || ""}
+                    language="python"
+                    copyLabel="Copy button code"
+                    copiedLabel="Copied!"
+                  />
+                </Accordion.Panel>
+              </Accordion.Item>
+            </Accordion>
+          </Box>
+        ) : (
+          <Box className={classes.testCaseDisplay}>
+            {getTestCaseResult(currentTestCase._id.toString(), 1) && (
+              <Group mb={"lg"}>
+                <Badge
+                  variant="dot"
+                  color={getTestCaseColour(currentTestCase._id.toString())}
+                  size="xl"
+                  radius="xs"
+                >
+                  {getTestCaseResult(currentTestCase._id.toString(), 1).isPassed
+                    ? "Passed"
+                    : "Failed"}
+                </Badge>
+              </Group>
+            )}
+            <Alert variant="light">
+              This is a private test case! No other details will be shown.
+            </Alert>
+          </Box>
+        )}
+      </> */}
+    </Box>
+  );
+}
+
+export const TestCasesDisplay = ({
+  testCases,
+  latestResults,
+  isRunning,
+  attemptCodeMap,
+  attempt,
+}: {
+  testCases: TestCase[];
+  latestResults: TestCaseResult[];
+  isRunning: boolean;
+  attemptCodeMap: {
+    [attempt: number]: { code: string; results: TestCaseResult[] };
+  };
+  attempt: number;
+}) => {
+  const { colorScheme } = useMantineColorScheme();
+  const [currentTestCase, setCurrentTestCase] = useState<TestCase | null>(
+    testCases[0]
+  );
+  function onTestCaseChange(testCaseId: number) {
+    // find the test case and set it
+    const testCase = testCases.find((testCase) => testCase._id === testCaseId);
+    setCurrentTestCase(testCase);
+  }
+
+  function getTestCaseResult(
+    testCaseId: string,
+    runNumber: number // unused for now, -1 means latest
+  ): TestCaseResult | undefined {
+    // find the test case and get the result
+    return latestResults.find(
+      (result) => result.testCaseDetails.testCaseId === testCaseId
+    );
+  }
+
+  function getTestCaseColour(testCaseId: string): ButtonProps["color"] {
+    // if latestresult is fail, return red
+    const result = getTestCaseResult(testCaseId, -1);
+    if (!result) return "gray";
+
+    if (result.isPassed) {
+      return "green";
+    } else {
+      return "red";
+    }
+  }
+  return (
+    <>
       <Group>
         {testCases.map((testCase, index) => (
           <Button
@@ -467,6 +703,6 @@ export default function TestCasesWrapper({
           </Alert>
         </Box>
       )}
-    </Box>
+    </>
   );
-}
+};

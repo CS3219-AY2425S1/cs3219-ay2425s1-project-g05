@@ -1,3 +1,4 @@
+
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
@@ -54,17 +55,19 @@ const testCaseResultSchema = new Schema({
   },
   output: {
     type: String,
-    required: function () {
-      // Output is required if isPassed is true
-      return this.isPassed === true;
-    },
+    required: [true, "Output is required"],
+    // required: function () {
+    //   // Output is required if isPassed is true
+    //   return this.isPassed === true;
+    // },
   },
   error: {
     type: String,
-    required: function () {
-      // Output is required if isPassed is false
-      return this.isPassed === false;
-    },
+    required: [true, "Error is required"],
+    // required: function () {
+    //   // Output is required if isPassed is false
+    //   return this.isPassed === false;
+    // },
   },
   meta: {
     memory: {

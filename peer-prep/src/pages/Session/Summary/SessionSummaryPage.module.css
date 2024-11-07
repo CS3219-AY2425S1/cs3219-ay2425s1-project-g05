@@ -1,9 +1,9 @@
 .wrapper {
   min-height: calc(100vh - 60px - var(--mantine-spacing-md));
   align-items: baseline;
+  padding: 1rem;
 
-  padding: 20rem;
-  padding-top: 2rem;
+  padding-bottom: 16rem;
 
   flex-direction: column;
   gap: 2rem;
@@ -17,21 +17,24 @@
   padding: 1rem;
 }
 
-pre, .codeBlock, .testCases {
+pre,
+.codeBlock,
+.testCases {
   margin: 0;
   padding: 0.5rem;
   border-radius: 0.25rem;
 }
 
-.codeBlock {
+/* .codeBlock {
   background-color: light-dark(
     var(--mantine-color-gray-0),
     var(--mantine-color-dark-7)
   );
-}
+} */
 
 .testCases {
   width: 100%;
+  padding: 1rem;
 }
 
 .privateTestCases {
@@ -61,3 +64,25 @@ pre, .codeBlock, .testCases {
   border: 1px solid #ccc;
 }
 
+/* Test cases */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.testCaseIcon {
+  /* circular */
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background-color: var(--mantine-color-cyan-2);
+}
+
+.codeBlock {
+  min-height: 38px;
+}

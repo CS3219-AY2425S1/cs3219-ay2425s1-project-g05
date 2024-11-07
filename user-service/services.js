@@ -23,9 +23,9 @@ export function hashPassword(password) {
 
 export function generateAccessToken({ _id, email, displayName, isAdmin }) {
   return jwt.sign(
-    { userId:_id.toString(), email: email, displayName: displayName, isAdmin: isAdmin },
+    { userId: _id.toString(), email: email, displayName: displayName, isAdmin: isAdmin },
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: "15m" }
+    { expiresIn: "1d" }
   );
 }
 
@@ -39,5 +39,5 @@ export function verifyAccessToken(token) {
 }
 
 export function isValidUserId(id) {
-    return mongoose.isValidObjectId(id)
+  return mongoose.isValidObjectId(id)
 }

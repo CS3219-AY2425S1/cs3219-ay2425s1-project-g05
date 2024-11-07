@@ -46,14 +46,17 @@ const joiTestCaseResultSchema = Joi.object({
       "string.empty": "Expected output cannot be empty",
       "any.required": "Expected output is required",
     }),
-    input: Joi.string().trim().min(1).required().messages({
-      "string.empty": "Input cannot be empty",
-      "string.min": "Input must be at least 1 character long",
-      "any.required": "Input is required",
-    }),
-    output: Joi.string().required().messages({
-      "any.required": "Output is required",
-    }),
+  input: Joi.string().trim().min(1).required().messages({
+    "string.empty": "Input cannot be empty",
+    "string.min": "Input must be at least 1 character long",
+    "any.required": "Input is required",
+  }),
+  output: Joi.string().required().messages({
+    "any.required": "Output is required",
+  }),
+  error: Joi.string().required().messages({
+    "any.required": "Error is required",
+  }),
 }).messages({
   "object.base":
     "Each testcase results should have testCaseId, isPassed, and expectedOutput",
@@ -94,19 +97,19 @@ const joiAttemptSchema = Joi.object({
       "any.required": "Description is required with descriptionHtml and descriptionText",
     }),
     categoriesId: Joi.array()
-    .items(
-      Joi.number().min(0).max(7).messages({
-        "number.base": "Each category must be a number",
-        "number.min": "Category must be between 0 and 7",
-        "number.max": "Category must be between 0 and 7",
-      })
-    )
-    .required()
-    .min(1)
-    .messages({
-      "array.base": "Categories must be an array",
-      "array.min": "At least one category is required if specified",
-    }),
+      .items(
+        Joi.number().min(0).max(7).messages({
+          "number.base": "Each category must be a number",
+          "number.min": "Category must be between 0 and 7",
+          "number.max": "Category must be between 0 and 7",
+        })
+      )
+      .required()
+      .min(1)
+      .messages({
+        "array.base": "Categories must be an array",
+        "array.min": "At least one category is required if specified",
+      }),
     difficulty: Joi.string().valid("HARD", "MEDIUM", "EASY").required().messages({
       "any.only": "Difficulty must be either HARD, MEDIUM, or EASY",
       "any.required": "Difficulty is required",

@@ -7,7 +7,12 @@ export interface TestCaseResult {
   input: string;
   isPassed: boolean;
   output: string;
-  _id: string;
+  error: string;
+  _id?: string;
+  meta?: {
+    memory: number;
+    time: string;
+  }
 }
 
 export interface UserAttempt {

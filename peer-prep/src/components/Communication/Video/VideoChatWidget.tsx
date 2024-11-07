@@ -63,7 +63,14 @@ export default function VideoChatWidget({
   const [domReady, setDomReady] = useState(false);
 
   useEffect(() => {
+    console.log("LOG: PAGE LOADED 🔥🔥🔥");
     setDomReady(true);
+
+    return () => {
+      if (callStatusRef.current !== CALL_STATUS.IDLE) {
+        onEndCall();
+      }
+    };
   }, []);
 
   const [callStatus, setCallStatus] = useState<CALL_STATUS>(CALL_STATUS.IDLE);
@@ -75,6 +82,9 @@ export default function VideoChatWidget({
 
   const selfVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
+
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const remoteStreamRef = useRef<MediaStream | null>(null);
 
   // only when this is populated are we ready to make a call (connection wise)
   const [peerId, setPeerId] = useState(null);
@@ -115,6 +125,7 @@ export default function VideoChatWidget({
         audio: true,
       });
 
+      localStreamRef.current = stream;
       selfVideoRef.current.srcObject = stream;
       selfVideoRef.current.play();
       selfVideoRef.current.muted = true;
@@ -124,6 +135,8 @@ export default function VideoChatWidget({
         console.log("DEBUG: remote stream received", remoteStream);
         remoteVideoRef.current.srcObject = remoteStream;
         remoteVideoRef.current.play();
+
+        remoteStreamRef.current = remoteStream;
       });
 
       call.on("close", () => {
@@ -168,6 +181,8 @@ export default function VideoChatWidget({
       audio: true,
     });
 
+    localStreamRef.current = stream;
+
     selfVideoRef.current.srcObject = stream;
     selfVideoRef.current.play();
     selfVideoRef.current.muted = true;
@@ -179,6 +194,8 @@ export default function VideoChatWidget({
       console.log("DEBUG: remote stream received", remoteStream);
       remoteVideoRef.current.srcObject = remoteStream;
       remoteVideoRef.current.play();
+
+      remoteStreamRef.current = remoteStream;
     });
 
     call.on("close", () => {
@@ -189,7 +206,21 @@ export default function VideoChatWidget({
 
   function onEndCall() {
     // cleanup
+    console.log("DEBUG(VIDEO): CLEANING UP");
     setCallStatusWrapper(CALL_STATUS.IDLE);
+
+    // https://stackoverflow.com/questions/64012898/how-to-completely-turn-off-camera-on-mediastream-javascript
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((track) => track.stop());
+      localStreamRef.current.getVideoTracks()[0].stop();
+      localStreamRef.current = null;
+    }
+    if (remoteStreamRef.current) {
+      remoteStreamRef.current.getTracks().forEach((track) => track.stop());
+      remoteStreamRef.current.getVideoTracks()[0].stop();
+      remoteStreamRef.current = null;
+    }
+
     if (selfVideoRef.current) selfVideoRef.current.srcObject = null;
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
 

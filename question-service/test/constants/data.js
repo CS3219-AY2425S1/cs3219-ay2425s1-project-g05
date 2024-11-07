@@ -64,6 +64,45 @@ export const sampleQuestions = {
             "totalTestCaseCount": 2
         },
         "isDeleted": false
+    },
+    "validQuestion3": {
+        "title": "some title3",
+        "description": {
+            "descriptionText": "descr txt3",
+            "descriptionHtml": "descr html3"
+        },
+        "categoriesId": [3, 4],
+        "difficulty": "EASY",
+        "testCases": [
+            {
+                "testCode": "some test code 1",
+                "input": "some input 1",
+                "isPublic": true,
+                "expectedOutput": "expected output 1"
+            },
+            {
+                "testCode": "some test code 2",
+                "input": "some input 2",
+                "isPublic": false,
+                "expectedOutput": "expected output 2"
+            },
+            {
+                "testCode": "some test code 3",
+                "input": "some input 3",
+                "isPublic": false,
+                "expectedOutput": "expected output 3"
+            }
+        ],
+        "templateCode": "some template code",
+        "solutionCode": "some solution code",
+        "link": "some link",
+        // meta field is added by code, not in request. but should be in DB.
+        "meta": {
+            "publicTestCaseCount": 1,
+            "privateTestCaseCount": 2,
+            "totalTestCaseCount": 3
+        },
+        "isDeleted": false
     }
 }
 

@@ -196,6 +196,7 @@ export default function TestCasesWrapper({
           // Connection: "keep-alive",
           // "X-Accel-Buffering": "no",
         },
+        heartbeatTimeout: 1000 * 60 * 60 * 24,
       }
     );
 

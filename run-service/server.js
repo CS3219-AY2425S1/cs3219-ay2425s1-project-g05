@@ -11,8 +11,7 @@ const port = process.env.PORT || 8007;
 dotenv.config();
 app.use(express.json());
 
-const questionServiceUrl =
-  process.env.NODE_ENV === 'DEV' ? process.env.QUESTION_SVC_DEV : '';
+const questionServiceUrl = process.env.QUESTION_SVC_DEV;
 
 // TODO: Replace with actual Redis connection instance
 const redisClient = createClient({

@@ -1,0 +1,85 @@
+.container {
+  width: 100%;
+  max-width: 600px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  height: 40vh;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  border-radius: 8px;
+}
+
+.chatBox {
+  flex-grow: 1;
+  padding: 16px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+}
+
+.userMessage,
+.aiMessage {
+  width: 100%;
+  padding: 10px 15px;
+  border-radius: 12px;
+  display: inline-block;
+  word-wrap: break-word;
+}
+
+.userMessage {
+  align-self: flex-end;
+  background-color: #e7f2ff;
+  color: #000;
+  text-align: right;
+}
+
+.aiMessage {
+  align-self: flex-start;
+  background-color: #fceeff;
+  color: #000;
+  text-align: left;
+}
+
+.inputContainer {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.loaderContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: #f3f4f6;
+  border-radius: 12px;
+  max-width: 80%;
+  align-self: flex-start;
+}
+
+.emptyStateContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #888;
+  text-align: center;
+  font-style: italic;
+}
+
+.emptyIcon {
+  font-size: 40px;
+  color: #cccccc;
+  margin-bottom: 8px;
+}
+
+.emptyText {
+  font-size: 16px;
+  max-width: 80%;
+}

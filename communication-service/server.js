@@ -190,10 +190,11 @@ function onSetUsername(io, socket, data) {
  *  roomId: string,
  *  message: string,
  *  replyToId?: string
+ *  integration?: string // "copilot" || "chatgpt4o" || "gemini_1.0"
  * }} data 
  */
 function onChatMessage(io, socket, data) {
-  const { roomId, message, replyToId } = data;
+  const { roomId, message, replyToId, integration } = data;
 
   console.log(`Received message { ${message} } for room id { ${roomId} }`);
   // generate a messageId based on the roomId and the current timestamp
@@ -205,7 +206,9 @@ function onChatMessage(io, socket, data) {
       name: socket.name,
       email: socket.email,
       userSocketId: socket.id,
+
     },
+    integration: integration,
     content: message,
     timestamp: new Date(),
     messageId: uniqueId,

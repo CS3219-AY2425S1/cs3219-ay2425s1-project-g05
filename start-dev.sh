@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Array of directories
-directories=("matching-service" "peer-prep" "question-service" "user-service" "collaboration-service" "communication-service")
+directories=("matching-service" "peer-prep" "question-service" "user-service" "collaboration-service" "communication-service" "history-service" "ai-chat-service")
 
 # Loop through each directory and run npm run dev
 for dir in "${directories[@]}"; do

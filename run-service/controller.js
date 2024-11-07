@@ -17,12 +17,15 @@ const startSession = async (req, res) => {
   try {
     // Check if a session already exists by checking redis store
     const sessionKey = `session:${userA}-${userB}`;
+
+    console.log("✅✅✅✅ REDIS CONTENTS UPON REQUESTION TO START SESSION ✅✅✅✅")
+    printRedisMemory()
     // Get session data from Redis
     const channelData = await redisClient.hGetAll(sessionKey);
     if (channelData && channelData.channelId) {
       console.log("Session data found in Redis:", channelData.channelId);
       // Remove channel data from Redis
-      await redisClient.del(sessionKey);
+      //await redisClient.del(sessionKey);
       return res.status(200).json({
         statusCode: 200,
         message: `Unique channelId found for ${userA} and ${userB}`,
@@ -34,12 +37,14 @@ const startSession = async (req, res) => {
       const channelId = uuidv4();
       console.log("Creating session in Redis:", channelId);
       // Store channelId in Redis
+
+      // create a key-channelId
       await redisClient.hSet(sessionKey, {
         channelId,
         userA,
         userB,
       });
-      await redisClient.hSet(channelId, {
+      await redisClient.hSet(`channelId:${channelId}`, {
         sessionKey,
         [firstUserId]: "disconnected",
         [secondUserId]: "disconnected",
@@ -67,6 +72,7 @@ const startSession = async (req, res) => {
 const subscribeToChannel = async (req, res) => {
   const { channelId } = req.params;
   const { userId, otherUserId } = req.query;
+  const [userA, userB] = [userId, otherUserId].sort();
 
   const subscriber = redisClient.duplicate();
   await subscriber.connect();
@@ -104,9 +110,9 @@ const subscribeToChannel = async (req, res) => {
     console.log("Received update from Redis:", update.statusCode);
     if (update.statusCode === 200) {
       // remove the channel data from Redis
-      (async () => {
-        await redisClient.del(`channel:${channelId}`);
-      })();
+      // (async () => {
+      //   await redisClient.del(`channel:${channelId}`);
+      // })();
 
       // final one: set timeout of 8 seconds
       // comment out later
@@ -137,6 +143,7 @@ const subscribeToChannel = async (req, res) => {
     const channelData = await redisClient.hGetAll(`channel:${channelId}`);
     if (channelData && channelData[otherUserId] === "disconnected") {
       await redisClient.del(`channel:${channelId}`);
+      await redisClient.del(`session:${userA}-${userB}`);
     } else {
       await redisClient.hSet(`channel:${channelId}`, {
         ...channelData,

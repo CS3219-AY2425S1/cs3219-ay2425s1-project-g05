@@ -19,7 +19,8 @@ export enum SERVICE {
   QUESTION,
   COLLAB,
   RUN,
-  HISTORY
+  HISTORY,
+  AI,
 }
 
 export default function useApi() {
@@ -58,6 +59,9 @@ export default function useApi() {
           break;
         case SERVICE.HISTORY:
           baseUrl = import.meta.env.VITE_API_URL_HISTORY;
+          break;
+        case SERVICE.AI:
+          baseUrl = import.meta.env.VITE_API_URL_AI;
           break;
         default:
           throw new Error("Missing base URL!");

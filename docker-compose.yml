@@ -1,10 +1,13 @@
+include:
+  - run-service/runner/docker-compose.yml
+
 services:
   redis:
     image: redis:latest
     restart: always
     command: redis-server --loglevel warning
     ports:
-      - '6379:6379'
+      - '6380:6379'
 
   user-service:
     restart: always

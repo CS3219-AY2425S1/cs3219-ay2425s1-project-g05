@@ -1,0 +1,75 @@
+# adapted from the Judge0 repository
+x-logging: &default-logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100M
+
+services:
+  server:
+    depends_on:
+      - pause
+    image: judge0/judge0:latest
+    volumes:
+      - ./judge0.conf:/judge0.conf:ro
+    <<: *default-logging
+    ports:
+      - '2358:2358'
+    privileged: true
+    restart: always
+    networks:
+      - runner
+
+  worker:
+    depends_on:
+      - pause
+    image: judge0/judge0:latest
+    command: ['./scripts/workers']
+    volumes:
+      - ./judge0.conf:/judge0.conf:ro
+    <<: *default-logging
+    privileged: true
+    restart: always
+    networks:
+      - runner
+
+  pause:
+    depends_on:
+      - db
+      - redis-run-svc
+    image: busybox
+    command: ['sleep', '10']
+
+  db:
+    image: postgres:16.2
+    env_file: judge0.conf
+    volumes:
+      - data:/var/lib/postgresql/data/
+    <<: *default-logging
+    restart: always
+    ports:
+      - '5432:5432'
+    networks:
+      - runner
+
+  redis-run-svc:
+    image: redis:7.2.4
+    command:
+      [
+        'bash',
+        '-c',
+        'docker-entrypoint.sh --appendonly no --requirepass "$$REDIS_PASSWORD"',
+      ]
+    <<: *default-logging
+    env_file: judge0.conf
+    restart: always
+    networks:
+      - runner
+    ports:
+      - '6379:6379'
+
+volumes:
+  data:
+
+networks:
+  runner:

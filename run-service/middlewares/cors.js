@@ -8,13 +8,14 @@ const allowedOrigins = [
   'http://PeerPrepALB-705702575.ap-southeast-1.elb.amazonaws.com', // online load balancer
   'http://redis-001.mrdqdr.0001.apse1.cache.amazonaws.com:6379', // online redis instance
   'http://localhost:8000',
-  'http://localhost:8001',
-  'http://localhost:8002',
-  'http://localhost:8003',
-  'http://localhost:8004',
+  'http://localhost:8001', // user service
+  'http://localhost:8002', // matching service
+  'http://localhost:8003', // question service
+  'http://localhost:8004', // collaboration service
   'http://localhost:8005',
   'http://localhost:8006',
   'http://localhost:8007',
+  'http://localhost:8008',
 ];
 
 // PORT 8000 - FRONTEND

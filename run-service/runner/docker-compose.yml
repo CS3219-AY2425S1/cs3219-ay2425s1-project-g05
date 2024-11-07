@@ -8,7 +8,8 @@ x-logging: &default-logging
 services:
   server:
     depends_on:
-      - pause
+      - db
+      - redis-run-svc
     image: judge0/judge0:latest
     volumes:
       - ./judge0.conf:/judge0.conf:ro
@@ -22,7 +23,8 @@ services:
 
   worker:
     depends_on:
-      - pause
+      - db
+      - redis-run-svc
     image: judge0/judge0:latest
     command: ['./scripts/workers']
     volumes:
@@ -32,13 +34,6 @@ services:
     restart: always
     networks:
       - runner
-
-  pause:
-    depends_on:
-      - db
-      - redis-run-svc
-    image: busybox
-    command: ['sleep', '10']
 
   db:
     image: postgres:16.2

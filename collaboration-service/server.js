@@ -67,31 +67,24 @@ httpServer.on('upgrade', (req, sock, head) => {
 
   if (cookie === '') {
     console.log('Missing Access Token');
-    websocketServer.emit('error', soc, req);
+    websocketServer.emit('invalid-token', sock, req);
     sock.destroy();
   }
 
-  let foundAccessToken = false;
-  cookie = cookie.split(';');
+  cookie = cookie
+    .split('; ')
+    .find((row) => row.startsWith('accessToken='))
+    ?.split('=')[1];
 
-  for (const cook of cookie) {
-    const tok = cook.split('=');
-    tok.forEach((x) => x.trim());
-
-    if (tok.length > 0 && tok[0].includes('accessToken')) {
-      foundAccessToken = true;
-
-      if (!verifyAccessToken(tok[1].trim())) {
-        console.log('Invalid Access Token');
-        websocketServer.emit('error', soc, req);
-        sock.destroy();
-      }
-    }
+  if (!cookie) {
+    console.log('Invalid Access Token');
+    websocketServer.emit('invalid-token', sock, req);
+    sock.destroy();
   }
 
-  if (!foundAccessToken) {
-    console.log('Missing Access Token');
-    websocketServer.emit('error', soc, req);
+  if (!verifyAccessToken(cookie)) {
+    console.log('Invalid Access Token');
+    websocketServer.emit('invalid-token', sock, req);
     sock.destroy();
   }
 

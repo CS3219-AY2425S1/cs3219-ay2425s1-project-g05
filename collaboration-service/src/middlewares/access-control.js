@@ -12,27 +12,34 @@ function verifyAccessToken(token) {
   });
 }
 
-function verifyAuthMiddleware(socket, next) {
-    const cookies = socket.request.headers.cookie;
+function verifyAuthMiddleware(req, res, next) {
+  const { accessToken } = req.cookies;
 
-    if (!cookies) {
-        return next(new Error("Unauthorized: No cookies found"));
-    }
+  // if (!cookies) {
+  //   return next(new Error('Unauthorized: No cookies found'));
+  // }
 
-    const accessToken = cookies
-        .split("; ")
-        .find(row => row.startsWith("accessToken="))
-        ?.split("=")[1];
+  // const accessToken = cookies
+  //   .split('; ')
+  //   .find((row) => row.startsWith('accessToken='))
+  //   ?.split('=')[1];
 
-    if (!accessToken) {
-        return next(new Error("Unauthorized: No access token found"));
-    }
+  if (!accessToken) {
+    return res
+      .status(403)
+      .json({ statusCode: 403, message: 'Missing Access Token' });
+  }
 
-    if (!verifyAccessToken(accessToken)) {
-        return next(new Error("Unauthorized: Invalid token"));
-    }
+  const user = verifyAccessToken(accessToken);
+  if (!user) {
+    return res
+      .status(403)
+      .json({ statusCode: 403, message: 'Missing Access Token' });
+  }
 
-    next();
-};
+  req.user = { ...user }
+
+  return next();
+}
 
 export { verifyAccessToken, verifyAuthMiddleware };

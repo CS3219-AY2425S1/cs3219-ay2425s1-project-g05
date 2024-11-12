@@ -145,10 +145,9 @@ const executeTest = async (req, res) => {
     }
 
     // The code below no longer cause issues for the current implementation
-    // but if test cases are executed as long as one user choose to leave room,
-    // without execute test cases, running test cases from frontend to save
-    // attempt may cause issues
-    // Delete when necessary
+    // but when as long as one user choose to leave room, without executing test cases,
+    // running test cases from frontend to save attempt with test cases may cause issues
+    // Delete the code below when necessary
     // If another client is not subscribed to the channel, throw an error
     if (initialChannelData) {
       if (

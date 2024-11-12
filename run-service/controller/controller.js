@@ -1,10 +1,8 @@
 import { v4 as uuidv4 } from "uuid";
 
 import { printRedisMemory, setChannelData } from "../utils/redis.js";
-import { questionServiceUrl, redisClient } from "../server.js";
-import UnauthorizedError from "../errors/UnauthorisedError.js";
+import { redisClient } from "../server.js";
 import ConflictError from "../errors/ConflictError.js";
-import ServiceUnavailableError from "../errors/ServiceUnavailable.js";
 import NotFoundError from "../errors/NotFoundError.js";
 import BaseError from "../errors/BaseError.js";
 import { getTestcases, processTestcases } from "../utils/index.js";

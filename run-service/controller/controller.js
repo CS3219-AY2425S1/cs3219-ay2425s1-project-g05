@@ -86,6 +86,9 @@ const subscribeToChannel = async (req, res) => {
 
   const setUserConnectedData = { [userId]: "connected" };
   setChannelData(channelKey, setUserConnectedData);
+  console.log("User connected to channel:", userId);
+  const toLog = await redisClient.hGetAll(`channel:${channelId}`);
+  console.log(`Channel data after setting connected for user:${userId}`, toLog);
 
   subscriber.subscribe(`channel:${channelId}`, (message) => {
     const update = JSON.parse(message);
@@ -144,25 +147,6 @@ const executeTest = async (req, res) => {
       return;
     }
 
-    // The code below no longer cause issues for the current implementation
-    // but when as long as one user choose to leave room, without executing test cases,
-    // running test cases from frontend to save attempt with test cases may cause issues
-    // Delete the code below when necessary
-    // If another client is not subscribed to the channel, throw an error
-    if (initialChannelData) {
-      if (
-        initialChannelData[firstUserId] !== "connected" ||
-        initialChannelData[secondUserId] !== "connected"
-      ) {
-        console.log(
-          "Another user is not connected to the channel. Try again later error thrown"
-        );
-        throw new ConflictError(
-          "Another user is not connected to the channel. Try again later."
-        );
-        return;
-      }
-    }
 
     // Retrieve testcases for the question
     console.log("Executing test cases for questionId:", questionId);

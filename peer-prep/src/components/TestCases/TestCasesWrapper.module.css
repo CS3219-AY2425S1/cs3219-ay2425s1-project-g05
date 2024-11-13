@@ -19,3 +19,12 @@
 .codeBlock {
   min-height: 38px;
 }
+
+li, p, code, pre, ul {
+  font-size: small;
+  margin: 8px, 0;
+}
+
+.reactMarkDown p {
+  margin: 4px 0;
+}

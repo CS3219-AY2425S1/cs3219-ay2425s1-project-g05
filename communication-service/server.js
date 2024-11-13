@@ -247,7 +247,7 @@ io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
   // Listen for a join request from the client
-  socket.on('joinRoom', (data) => onJoinRoom(io, socket, data));
+  socket.on('join-room', (data) => onJoinRoom(io, socket, data));
 
   // Handle chat messages for a specific room
   socket.on('chat-message', (data) => onChatMessage(io, socket, data));

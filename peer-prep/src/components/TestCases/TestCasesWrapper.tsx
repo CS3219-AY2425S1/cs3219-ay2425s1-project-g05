@@ -6,9 +6,11 @@ import {
   Box,
   Button,
   ButtonProps,
+  Card,
   Code,
   Collapse,
   Group,
+  Loader,
   rem,
   SimpleGrid,
   Space,
@@ -37,6 +39,8 @@ import { CodeHighlight } from "@mantine/code-highlight";
 
 import "@mantine/code-highlight/styles.css";
 import { useAuth } from "../../hooks/useAuth";
+import ReactMarkdown from "react-markdown";
+import { useAi } from "../../hooks/useAi";
 
 type TestCasesWrapperProps = {
   testCases: TestCase[]; // array of test cases
@@ -51,6 +55,9 @@ type TestCasesWrapperProps = {
   userId: string;
 
   latestResultsRef: React.MutableRefObject<TestCaseResult[]>;
+
+  roomId: string;
+  question: string;
 };
 
 const STATUS_PARTIAL = 206;
@@ -69,6 +76,9 @@ export default function TestCasesWrapper({
   otherUserId,
 
   latestResultsRef,
+
+  roomId,
+  question,
 }: TestCasesWrapperProps) {
   const [latestResults, setLatestResults] = useState<TestCaseResult[]>([]);
 
@@ -94,6 +104,7 @@ export default function TestCasesWrapper({
   );
 
   const [isError, setIsError] = useState<boolean>(false);
+  const [testCaseRunKey, setTestCaseRunKey] = useState(0);
 
   // array of tries for each attempt
   // const [allResults, setAllResults] = useState<TestCaseResult[][]>([]);
@@ -255,6 +266,7 @@ export default function TestCasesWrapper({
     })
       .then((response) => {
         console.log({ response });
+        setTestCaseRunKey(prev => prev + 1); // Change key to reset the display of test cases
       })
       .catch((e) => {
         console.log("ERROR⚠️: Error running test cases");
@@ -305,6 +317,8 @@ export default function TestCasesWrapper({
     }
   }
   console.log({ colorScheme });
+
+
   return (
     <Box className={classes.container}>
       <Group style={{ alignItems: "center" }}>
@@ -321,184 +335,190 @@ export default function TestCasesWrapper({
         </Button>
       </Group>
       <TestCasesDisplay
+        key={testCaseRunKey}
         attempt={attempt}
         attemptCodeMap={attemptCodeMap}
         isRunning={isRunning}
         latestResults={latestResults}
         testCases={testCases}
+        roomId={roomId}
+        userId={userId}
+        question={question}
       />
-      {/* <>
-        <Group>
-          {testCases.map((testCase, index) => (
-            <Button
-              key={index}
-              size="sm"
-              color={getTestCaseColour(testCase._id.toString())}
-              radius={"sm"}
-              variant={
-                testCase._id === currentTestCase?._id ? "filled" : "light"
-              }
-              onClick={() => onTestCaseChange(testCase._id)}
-              loading={
-                isRunning &&
-                latestResults.find(
-                  (result) =>
-                    result.testCaseDetails.testCaseId ===
-                    testCase._id.toString()
-                ) === undefined
-              }
-            >
-              {index + 1}
-            </Button>
-          ))}
-        </Group>
-        {currentTestCase && currentTestCase.isPublic ? (
-          <Box className={classes.testCaseDisplay}>
-            {getTestCaseResult(currentTestCase._id.toString(), 1) && (
-              <Group>
-                <Badge
-                  variant="dot"
-                  color={getTestCaseColour(currentTestCase._id.toString())}
-                  size="xl"
-                  radius="xs"
-                >
-                  {getTestCaseResult(currentTestCase._id.toString(), 1).isPassed
-                    ? "Passed"
-                    : "Failed"}
-                </Badge>
-                <Space flex={1} />
+      <>
+        {/* <>
+          <Group>
+            {testCases.map((testCase, index) => (
+              <Button
+                key={index}
+                size="sm"
+                color={getTestCaseColour(testCase._id.toString())}
+                radius={"sm"}
+                variant={
+                  testCase._id === currentTestCase?._id ? "filled" : "light"
+                }
+                onClick={() => onTestCaseChange(testCase._id)}
+                loading={
+                  isRunning &&
+                  latestResults.find(
+                    (result) =>
+                      result.testCaseDetails.testCaseId ===
+                      testCase._id.toString()
+                  ) === undefined
+                }
+              >
+                {index + 1}
+              </Button>
+            ))}
+          </Group>
+          {currentTestCase && currentTestCase.isPublic ? (
+            <Box className={classes.testCaseDisplay}>
+              {getTestCaseResult(currentTestCase._id.toString(), 1) && (
                 <Group>
                   <Badge
-                    leftSection={<IconDatabase width="16px" height="16px" />}
-                    radius="sm"
-                    variant="light"
-                    size="lg"
-                    styles={{
-                      label: {
-                        // get rid of uppercase
-                        textTransform: "none",
-                      },
-                    }}
-                    color={colorScheme === "dark" ? "gray" : "gray"}
+                    variant="dot"
+                    color={getTestCaseColour(currentTestCase._id.toString())}
+                    size="xl"
+                    radius="xs"
                   >
-                    {kBtoMb(
-                      getTestCaseResult(currentTestCase._id.toString(), 1)
-                        .memory
-                    )}{" "}
-                    MB
+                    {getTestCaseResult(currentTestCase._id.toString(), 1).isPassed
+                      ? "Passed"
+                      : "Failed"}
                   </Badge>
-                  <Badge
-                    leftSection={
-                      <IconHourglassEmpty width="16px" height="16px" />
-                    }
-                    radius="sm"
-                    variant="light"
-                    size="lg"
-                    styles={{
-                      label: {
-                        // get rid of uppercase
-                        textTransform: "none",
-                      },
-                    }}
-                    color={colorScheme === "dark" ? "gray" : "gray"}
-                  >
-                    {secondsToMsIfappropriate(
-                      Number(
+                  <Space flex={1} />
+                  <Group>
+                    <Badge
+                      leftSection={<IconDatabase width="16px" height="16px" />}
+                      radius="sm"
+                      variant="light"
+                      size="lg"
+                      styles={{
+                        label: {
+                          // get rid of uppercase
+                          textTransform: "none",
+                        },
+                      }}
+                      color={colorScheme === "dark" ? "gray" : "gray"}
+                    >
+                      {kBtoMb(
                         getTestCaseResult(currentTestCase._id.toString(), 1)
-                          .time
-                      )
-                    )}
+                          .memory
+                      )}{" "}
+                      MB
+                    </Badge>
+                    <Badge
+                      leftSection={
+                        <IconHourglassEmpty width="16px" height="16px" />
+                      }
+                      radius="sm"
+                      variant="light"
+                      size="lg"
+                      styles={{
+                        label: {
+                          // get rid of uppercase
+                          textTransform: "none",
+                        },
+                      }}
+                      color={colorScheme === "dark" ? "gray" : "gray"}
+                    >
+                      {secondsToMsIfappropriate(
+                        Number(
+                          getTestCaseResult(currentTestCase._id.toString(), 1)
+                            .time
+                        )
+                      )}
+                    </Badge>
+                  </Group>
+                </Group>
+              )}
+              <SimpleGrid cols={{ base: 1, md: 2 }} mt="lg">
+                <Box mb={"md"}>
+                  <Text style={{ fontWeight: "700" }}> Test Program </Text>
+                  <Code block mt={"xs"} className={classes.codeBlock}>
+                    {currentTestCase.testCode}
+                  </Code>
+                </Box>
+                <Box>
+                  <Text style={{ fontWeight: "700" }}> Expected Output </Text>
+                  <Code block mt="xs" className={classes.codeBlock}>
+                    {currentTestCase.expectedOutput}
+                  </Code>
+                </Box>
+              </SimpleGrid>
+
+              <Box>
+                <Text style={{ fontWeight: "700" }}> Actual output: </Text>
+              </Box>
+              <Code
+                block
+                className={classes.codeBlock}
+                style={{
+                  outline:
+                    getTestCaseResult(currentTestCase._id.toString(), 1) &&
+                    `1.5px solid var(--mantine-color-${getTestCaseColour(
+                      currentTestCase._id.toString()
+                    )}-9)`,
+                }}
+                color={
+                  colorScheme === "light" &&
+                  `${getTestCaseColour(currentTestCase._id.toString())}.1`
+                }
+              >
+                {getTestCaseResult(currentTestCase._id.toString(), 1) ===
+                undefined
+                  ? "No output yet, please run the test case to view output"
+                  : getTestCaseResult(currentTestCase._id.toString(), 1).stdout}
+              </Code>
+
+              <Box mt={"xs"}>
+                <Text style={{ fontWeight: "700" }}> Error logs: </Text>
+              </Box>
+              <Code block className={classes.codeBlock}>
+                {getTestCaseResult(currentTestCase._id.toString(), 1) ===
+                undefined
+                  ? "No output yet, please run the test case to view output"
+                  : getTestCaseResult(currentTestCase._id.toString(), 1).stderr}
+              </Code>
+
+              <Accordion variant="separated" mt="md">
+                <Accordion.Item value={"code"}>
+                  <Accordion.Control>
+                    <b>Submitted code</b>
+                  </Accordion.Control>
+                  <Accordion.Panel>
+                    <CodeHighlight
+                      code={attemptCodeMap[attempt]?.code || ""}
+                      language="python"
+                      copyLabel="Copy button code"
+                      copiedLabel="Copied!"
+                    />
+                  </Accordion.Panel>
+                </Accordion.Item>
+              </Accordion>
+            </Box>
+          ) : (
+            <Box className={classes.testCaseDisplay}>
+              {getTestCaseResult(currentTestCase._id.toString(), 1) && (
+                <Group mb={"lg"}>
+                  <Badge
+                    variant="dot"
+                    color={getTestCaseColour(currentTestCase._id.toString())}
+                    size="xl"
+                    radius="xs"
+                  >
+                    {getTestCaseResult(currentTestCase._id.toString(), 1).isPassed
+                      ? "Passed"
+                      : "Failed"}
                   </Badge>
                 </Group>
-              </Group>
-            )}
-            <SimpleGrid cols={{ base: 1, md: 2 }} mt="lg">
-              <Box mb={"md"}>
-                <Text style={{ fontWeight: "700" }}> Test Program </Text>
-                <Code block mt={"xs"} className={classes.codeBlock}>
-                  {currentTestCase.testCode}
-                </Code>
-              </Box>
-              <Box>
-                <Text style={{ fontWeight: "700" }}> Expected Output </Text>
-                <Code block mt="xs" className={classes.codeBlock}>
-                  {currentTestCase.expectedOutput}
-                </Code>
-              </Box>
-            </SimpleGrid>
-
-            <Box>
-              <Text style={{ fontWeight: "700" }}> Actual output: </Text>
+              )}
+              <Alert variant="light">
+                This is a private test case! No other details will be shown.
+              </Alert>
             </Box>
-            <Code
-              block
-              className={classes.codeBlock}
-              style={{
-                outline:
-                  getTestCaseResult(currentTestCase._id.toString(), 1) &&
-                  `1.5px solid var(--mantine-color-${getTestCaseColour(
-                    currentTestCase._id.toString()
-                  )}-9)`,
-              }}
-              color={
-                colorScheme === "light" &&
-                `${getTestCaseColour(currentTestCase._id.toString())}.1`
-              }
-            >
-              {getTestCaseResult(currentTestCase._id.toString(), 1) ===
-              undefined
-                ? "No output yet, please run the test case to view output"
-                : getTestCaseResult(currentTestCase._id.toString(), 1).stdout}
-            </Code>
-
-            <Box mt={"xs"}>
-              <Text style={{ fontWeight: "700" }}> Error logs: </Text>
-            </Box>
-            <Code block className={classes.codeBlock}>
-              {getTestCaseResult(currentTestCase._id.toString(), 1) ===
-              undefined
-                ? "No output yet, please run the test case to view output"
-                : getTestCaseResult(currentTestCase._id.toString(), 1).stderr}
-            </Code>
-
-            <Accordion variant="separated" mt="md">
-              <Accordion.Item value={"code"}>
-                <Accordion.Control>
-                  <b>Submitted code</b>
-                </Accordion.Control>
-                <Accordion.Panel>
-                  <CodeHighlight
-                    code={attemptCodeMap[attempt]?.code || ""}
-                    language="python"
-                    copyLabel="Copy button code"
-                    copiedLabel="Copied!"
-                  />
-                </Accordion.Panel>
-              </Accordion.Item>
-            </Accordion>
-          </Box>
-        ) : (
-          <Box className={classes.testCaseDisplay}>
-            {getTestCaseResult(currentTestCase._id.toString(), 1) && (
-              <Group mb={"lg"}>
-                <Badge
-                  variant="dot"
-                  color={getTestCaseColour(currentTestCase._id.toString())}
-                  size="xl"
-                  radius="xs"
-                >
-                  {getTestCaseResult(currentTestCase._id.toString(), 1).isPassed
-                    ? "Passed"
-                    : "Failed"}
-                </Badge>
-              </Group>
-            )}
-            <Alert variant="light">
-              This is a private test case! No other details will be shown.
-            </Alert>
-          </Box>
-        )}
-      </> */}
+          )}
+        </> */}
+      </>
     </Box>
   );
 }
@@ -509,6 +529,9 @@ export const TestCasesDisplay = ({
   isRunning,
   attemptCodeMap,
   attempt,
+  userId,
+  roomId,
+  question,
 }: {
   testCases: TestCase[];
   latestResults: TestCaseResult[];
@@ -517,11 +540,43 @@ export const TestCasesDisplay = ({
     [attempt: number]: { code: string; results: TestCaseResult[] };
   };
   attempt: number;
+  userId: string;
+  roomId: string;
+  question: string;
 }) => {
+  const { fetchData } = useApi();
+  const { setApiKeyModalVisible, hasApiKey } = useAi();
+
   const { colorScheme } = useMantineColorScheme();
   const [currentTestCase, setCurrentTestCase] = useState<TestCase | null>(
     testCases[0]
   );
+
+  // TODO: REFACTOR overlapping code for failed test case analysis and error logs analysis
+
+  // FOR FAILED TEST CASE ANALYSIS
+  const [openedTestCaseAnalysis, setOpenedTestCaseAnalysis] = useState(false);
+  const [loadingTestCaseAnalysis, setLoadingTestCaseAnalysis] = useState(false);
+  const [generatedTestCaseAnalysis, setGeneratedTestCaseAnalysis] = useState(false);
+
+  const [displayedLinesTestCaseAnalysis, setDisplayedLinesTestCaseAnalysis] = useState([]);
+  const [analysisResultTestCaseAnalysis, setAnalysisResultTestCaseAnalysis] = useState(null);
+  const [errorRetrievingTestCaseAnalysis, setErrorRetrievingTestCaseAnalysis] = useState(false);
+
+  // FOR ERROR LOGS ANALYSIS
+  const [opened, setOpened] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [dots, setDots] = useState('');
+  const [generated, setGenerated] = useState(false);
+
+  const [displayedLines, setDisplayedLines] = useState([]);
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [errorRetrieving, setErrorRetrieving] = useState(false);
+
+  interface AiChatResponse {
+    reply: string;
+  }
+
   function onTestCaseChange(testCaseId: number) {
     // find the test case and set it
     const testCase = testCases.find((testCase) => testCase._id === testCaseId);
@@ -549,6 +604,201 @@ export const TestCasesDisplay = ({
       return "red";
     }
   }
+
+  useEffect(() => {
+    // Clear AI analysis when the component re-renders due to key change or testCases change
+    setAnalysisResultTestCaseAnalysis(null);
+    setDisplayedLinesTestCaseAnalysis([]);
+    setGeneratedTestCaseAnalysis(false);
+
+    setAnalysisResult(null);
+    setDisplayedLines([]);
+    setGenerated(false);
+  }, [testCases]);
+  
+  const handleAnalyseClick = async () => {
+    // User must key in their API key first to use the AI service, show modal if they have not
+    if (!hasApiKey) {
+      setApiKeyModalVisible(true);
+      return;
+    }
+
+    setOpened(true);
+    setLoading(true);
+
+    // Clear previous analysis results
+    setAnalysisResult(null);
+    setDisplayedLines([]);
+    setErrorRetrieving(false);
+
+    // Retrieve solution code and error logs to send to AI
+    const solutionCode = attemptCodeMap[attempt]?.code || '';
+    const errorLogs = getTestCaseResult(currentTestCase._id.toString(), 1)?.stderr || '';
+
+    console.log('Solution code:', solutionCode);
+    console.log('Error logs:', errorLogs);
+
+    // Send the prompt to the AI for analysis
+    fetchData<ServerResponse<AiChatResponse>>(
+      `/gen-ai-service/analyse-error-logs`,
+      SERVICE.AI,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          errorLogs,
+          solutionCode,
+          userId,
+          roomId,
+        }),
+      }
+    ).then((res) => {
+      if (res.statusCode === 200) {
+        console.log('AI Analysis:', res.data.reply);
+        setAnalysisResult(res.data.reply);
+
+        const lines = res.data.reply.trim().split('\n');
+        displayLines(lines);
+
+        setGenerated(true);
+        setLoading(false);
+        setAnalysisResult(res.data.reply);
+      } else {
+        console.error('Error fetching AI analysis:', res.data.reply);
+        setLoading(false);
+        setAnalysisResult('Failed to fetch AI analysis. Please try again.');
+        setErrorRetrieving(true);
+      }
+    }).catch((error) => {
+      // Simulate delay before error handling
+      setTimeout(() => {
+        console.error('Error fetching AI analysis:', error);
+        setAnalysisResult('Failed to fetch AI analysis. Please try again.');
+        setErrorRetrieving(true);
+        setLoading(false);
+      }, 1500);  // 1.5 second delay before handling the error
+    });
+  };
+
+  // Function to display AI analysis line by line
+  const displayLines = (lines) => {
+    let index = 0;
+    const interval = setInterval(() => {
+      setDisplayedLines((prevLines) => [...prevLines, lines[index]]);
+      index++;
+      if (index >= lines.length) clearInterval(interval);
+    }, 500);
+  };
+
+  const handleFailedTestCaseAnalyseClick = async () => {
+    // User must key in their API key first to use the AI service, show modal if they have not
+    if (!hasApiKey) {
+      setApiKeyModalVisible(true);
+      return;
+    }
+
+    setOpenedTestCaseAnalysis(true);
+    setLoadingTestCaseAnalysis(true);
+
+    // Clear previous analysis results
+    setAnalysisResultTestCaseAnalysis(null);
+    setDisplayedLinesTestCaseAnalysis([]);
+    setErrorRetrievingTestCaseAnalysis(false);
+
+    const testProgramCode = currentTestCase.testCode;
+    const expectedOutput = currentTestCase.expectedOutput;
+    const actualOutput = getTestCaseResult(currentTestCase._id.toString(), 1)?.stdout || '';
+    const solutionCode = attemptCodeMap[attempt]?.code || '';
+
+    console.log('Test program code:', testProgramCode);
+    console.log('Expected output:', expectedOutput);
+    console.log('Actual output:', actualOutput);
+    console.log('Solution code:', solutionCode);
+
+    // Make the API request to fetch failed test case analysis
+    fetchData<ServerResponse<AiChatResponse>>(
+      `/gen-ai-service/analyse-failed-test-cases`,
+      SERVICE.AI,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          testProgramCode,
+          expectedOutput,
+          actualOutput,
+          solutionCode,
+          question,
+          userId,
+          roomId,
+        }),
+      }
+    ).then((res) => {
+      if (res.statusCode === 200) {
+        console.log('AI Analysis:', res.data.reply);
+        setAnalysisResultTestCaseAnalysis(res.data.reply);
+
+        const lines = res.data.reply.trim().split('\n');
+        displayFailedTestCaseLines(lines);
+        setAnalysisResultTestCaseAnalysis(res.data.reply);
+        setLoadingTestCaseAnalysis(false);
+      } else {
+        console.log('got problem with ai analysis');
+        console.error('Error fetching failed test case analysis:', res.data.reply);
+        setAnalysisResultTestCaseAnalysis('Failed to fetch failed test case analysis. Please try again.');
+        setErrorRetrievingTestCaseAnalysis(true);
+        setLoadingTestCaseAnalysis(false);
+      }
+    }).catch((error) => {
+      // Simulate delay before error handling
+      setTimeout(() => {
+        console.error('Error fetching failed test case analysis:', error);
+        setAnalysisResultTestCaseAnalysis('Failed to fetch failed test case analysis. Please try again.');
+        setErrorRetrievingTestCaseAnalysis(true);
+        setLoadingTestCaseAnalysis(false);
+      }, 1500);  // 1.5 second delay before handling the error
+    });
+  };
+
+  const displayFailedTestCaseLines = (lines: string[]) => {
+    let index = 0;
+    const interval = setInterval(() => {
+      setDisplayedLinesTestCaseAnalysis((prevLines) => [...prevLines, lines[index]]);
+      index++;
+      if (index >= lines.length) clearInterval(interval);
+    }, 500);
+    setGeneratedTestCaseAnalysis(true);
+    setLoadingTestCaseAnalysis(false);
+  };
+
+  // Function to handle loading dots animation
+  useEffect(() => {
+    let interval;
+    if (loading) {
+      interval = setInterval(() => {
+        setDots((prev) => (prev.length >= 3 ? '' : prev + '.'));
+      }, 500); 
+    } else {
+      setDots('');
+    }
+    return () => clearInterval(interval);
+  }, [loading]);
+
+  useEffect(() => {
+    let interval;
+    if (loadingTestCaseAnalysis) {
+      interval = setInterval(() => {
+        setDots((prev) => (prev.length >= 3 ? '' : prev + '.'));
+      }, 500); 
+    } else {
+      setDots('');
+    }
+    return () => clearInterval(interval);
+  }, [loadingTestCaseAnalysis]);
+
   return (
     <>
       <Group>
@@ -667,6 +917,66 @@ export const TestCasesDisplay = ({
               ? "No output yet, please run the test case to view output"
               : getTestCaseResult(currentTestCase._id.toString(), 1).stdout}
           </Code>
+          {!getTestCaseResult(currentTestCase._id.toString(), 1)?.isPassed && getTestCaseResult(currentTestCase._id.toString(), 1)?.stdout && (
+            <>
+              <Button
+                onClick={handleFailedTestCaseAnalyseClick}
+                mt={8}
+                disabled={loadingTestCaseAnalysis}
+                variant="gradient" 
+                gradient={{ from: "violet", to: "blue", deg: 135 }}
+                style={{
+                  boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)', 
+                  borderRadius: '12px', 
+                  transition: 'all 0.3s ease',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'} 
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <>
+                  {loadingTestCaseAnalysis && <Loader size="xs" mr={8} color="grey" />}
+                  {generatedTestCaseAnalysis && !loadingTestCaseAnalysis ? 
+                    'Re-analyse Failing TC with Google Gemini' : 
+                    'Analyse Failing TC with Google Gemini'}
+                  <Badge
+                    variant="gradient"
+                    gradient={{ from: "violet", to: "blue", deg: 135 }}
+                    radius={"xs"}
+                    style={{ cursor: "pointer", marginLeft: '8px' }} 
+                  >
+                    AI
+                  </Badge>
+                </>
+              </Button>
+              {openedTestCaseAnalysis && generatedTestCaseAnalysis && (
+                <Button onClick={() => setOpenedTestCaseAnalysis(false)} mt={8} ml={8}>Hide</Button>
+              )}
+              {!openedTestCaseAnalysis && generatedTestCaseAnalysis && (
+                <Button onClick={() => setOpenedTestCaseAnalysis(true)} mt={8} ml={8}>Show</Button>
+              )}
+
+              <Card shadow="sm" padding="lg" mt="md" radius="md" withBorder display={openedTestCaseAnalysis ? 'block' : 'none'}>
+                <Box>
+                  {loadingTestCaseAnalysis && (
+                    <Text mt="xs">Analysing failing test case{dots}</Text>
+                  )}
+
+                  {/* TODO: display code in code block */}
+                  {/* Display AI analysis result line by line */}
+                  {!loadingTestCaseAnalysis && analysisResultTestCaseAnalysis && displayedLinesTestCaseAnalysis.length > 0 && (
+                    displayedLinesTestCaseAnalysis.map((line, index) => (
+                      <ReactMarkdown key={index}>{line}</ReactMarkdown>
+                    ))
+                  )}
+
+                  {/* Fallback message if no analysis is available */}
+                  {!loadingTestCaseAnalysis && errorRetrievingTestCaseAnalysis && (
+                    <Text>No analysis available. Please try again.</Text>
+                  )}
+                </Box>
+              </Card>
+            </>
+          )}
 
           <Box mt={"xs"}>
             <Text style={{ fontWeight: "700" }}> Error logs: </Text>
@@ -676,6 +986,64 @@ export const TestCasesDisplay = ({
               ? "No output yet, please run the test case to view output"
               : getTestCaseResult(currentTestCase._id.toString(), 1).stderr}
           </Code>
+
+          {getTestCaseResult(currentTestCase._id.toString(), 1)?.stderr && (
+            <>
+              <Button
+                onClick={handleAnalyseClick}
+                mt={8}
+                disabled={loading}
+                variant="gradient"
+                gradient={{ from: "violet", to: "blue", deg: 135 }}
+                style={{
+                  boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)',
+                  borderRadius: '12px',
+                  transition: 'all 0.3s ease',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <>
+                  {loading && <Loader size="xs" mr={8} color="grey" />}
+                  {generated && !loading ? 'Re-analyse Errors with Google Gemini' : 'Analyse Errors with Google Gemini'}
+                  <Badge
+                    variant="gradient"
+                    gradient={{ from: "violet", to: "blue", deg: 135 }}
+                    radius={"xs"}
+                    style={{ cursor: "pointer", marginLeft: '8px' }}
+                  >
+                    AI
+                  </Badge>
+                </>
+              </Button>
+              {opened && generated && (
+                <Button onClick={() => setOpened(false)} mt={8} ml={8}>Hide</Button>
+              )}
+              {!opened && generated && (
+                <Button onClick={() => setOpened(true)} mt={8} ml={8}>Show</Button>
+              )}
+
+              <Card shadow="sm" padding="lg" mt="md" radius="md" withBorder display={opened ? 'block' : 'none'}>
+                <Box>
+                  {loading && (
+                    <Text mt="xs">Analysing error logs{dots}</Text>
+                  )}
+
+                  {/* Display AI analysis result line by line */}
+                  {!loading && analysisResult && displayedLines.length > 0 && (
+                    displayedLines.map((line, index) => (
+                      <ReactMarkdown key={index}>{line}</ReactMarkdown>
+                    ))
+                  )}
+
+                  {/* Fallback message if no analysis is available */}
+                  {!loading && errorRetrieving && (
+                    <Text>No analysis available. Please try again.</Text>
+                  )}
+                </Box>
+              </Card>
+            </>
+          )}
 
           <Accordion variant="separated" mt="md">
             <Accordion.Item value={"code"}>

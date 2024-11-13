@@ -238,7 +238,7 @@ export default function LoginOrRegisterPage() {
               type="submit"
               variant="filled"
             >
-              Register
+              Sign up
             </Button>
           )}
 
@@ -253,7 +253,7 @@ export default function LoginOrRegisterPage() {
                   setLoginMode(false);
                 }}
               >
-                Register
+                Sign up
               </Anchor>
             </Text>
           ) : (

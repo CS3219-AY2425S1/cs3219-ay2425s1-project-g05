@@ -75,6 +75,7 @@ interface CollabResponse {
 export default function CreateSessionPage() {
   // TODO: query the question service to get a list of categories and difficulties
   const { fetchData } = useApi();
+  const { refreshForWs } = useAuth();
   const navigate = useNavigate();
 
   const [timeElapsed, setTimeElapsed] = useState(0);
@@ -144,7 +145,10 @@ export default function CreateSessionPage() {
 
   // initialize socket
   useEffect(() => {
-    socket.connect();
+    // refresh first if possible
+    refreshForWs().then(() => {
+      socket.connect();
+    });
 
     function onConnect() {
       console.log("connected to server");
@@ -249,6 +253,9 @@ export default function CreateSessionPage() {
     socket.on("finding-match", onWaitingForMatch);
     socket.on("found-match", onFoundMatch);
     socket.on("no-match", onNoMatch);
+    socket.on("connect_error", (error) => {
+      console.error("Connection error:", error.message);
+    });
 
     return () => {
       // clear up socket

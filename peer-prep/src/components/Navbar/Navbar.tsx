@@ -37,6 +37,7 @@ import {
   IconHome,
   IconSun,
   IconMoon,
+  IconRefresh,
 } from "@tabler/icons-react";
 import classes from "./Navbar.module.css";
 import { Link, useLocation } from "react-router-dom";
@@ -296,7 +297,16 @@ export function Navbar() {
                 >
                   Delete my account
                 </Menu.Item> */}
-
+                    <Menu.Item
+                      leftSection={
+                        <IconRefresh
+                          style={{ width: rem(14), height: rem(14) }}
+                        />
+                      }
+                      // onClick={logout}
+                    >
+                      Change password
+                    </Menu.Item>
                     <Menu.Item
                       color="red"
                       leftSection={

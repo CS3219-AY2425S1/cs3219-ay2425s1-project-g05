@@ -68,3 +68,11 @@ services:
       dockerfile: Dockerfile
     ports:
       - '8008:8008'
+
+  frontend:
+    restart: always
+    build:
+      context: ./peer-prep
+      dockerfile: Dockerfile
+    ports:
+      - '5173:5173'

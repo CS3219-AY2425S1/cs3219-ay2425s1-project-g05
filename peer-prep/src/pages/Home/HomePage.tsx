@@ -50,13 +50,13 @@ const MOCKDATA = [
     icon: IconCookie,
     title: "Choose your own adventure",
     description:
-      "With a large variety of questions and topics, you're able to work on those topics that have been giving you trouble",
+      "With a large variety of questions and categories, you're able to work on those categories that have been giving you trouble",
   },
   {
     icon: IconEdit,
     title: "Practice makes perfect",
     description:
-      "Keep track of the topics that you're struggling in, and maybe even attempt the questions again.",
+      "Keep track of the categories that you're struggling in, and maybe even attempt the questions again.",
   },
   // {
   //   icon: IconMessage2,
@@ -93,7 +93,7 @@ export default function Home() {
   const steps: StepProps[] = [
     {
       number: 1,
-      children: "Choose topics and difficulty",
+      children: "Choose categories and difficulty",
     },
     {
       number: 2,
@@ -155,7 +155,7 @@ export default function Home() {
                 Two heads are better than one. With our collaborative features,
                 think about and solve problems with a friend. As the saying
                 goes, if you can explain it to someone else, you have mastered
-                the topic.{" "}
+                the category.{" "}
               </Text>
             </Container>
 

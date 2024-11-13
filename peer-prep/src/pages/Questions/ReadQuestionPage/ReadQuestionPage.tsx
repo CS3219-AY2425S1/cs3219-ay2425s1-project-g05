@@ -177,9 +177,8 @@ export default function ReadQuestionPage() {
             />
           </SimpleGrid>
 
-          <Text className={classes.description}>
-            {question.description.descriptionText}
-          </Text>
+          <div dangerouslySetInnerHTML={{ __html: question.description.descriptionHtml }}></div>
+
         </Stack>
       </Container>
     );

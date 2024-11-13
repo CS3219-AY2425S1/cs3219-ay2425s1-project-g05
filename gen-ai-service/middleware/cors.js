@@ -23,7 +23,7 @@ const allowedOrigins = [
 // PORT 8005 - COMMUNICATION SERVICE
 // PORT 8006 - HISTORY SERVICE
 // PORT 8007 - RUN SERVICE
-// PORT 8008 - AI CHAT SERVICE
+// PORT 8008 - GEN AI SERVICE
 
 const corsOptions = {
   origin: allowedOrigins,

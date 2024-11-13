@@ -29,6 +29,7 @@ export default function useApi() {
   const [error, setError] = useState<any | null>(null);
 
   const navigate = useNavigate();
+  const { refresh } = useAuth();
 
   const [user, setUser] = useLocalStorage<User | null>({
     key: "user",
@@ -67,7 +68,7 @@ export default function useApi() {
           throw new Error("Missing base URL!");
       }
 
-      const response = await fetch(`${baseUrl}${url}`, {
+      let response = await fetch(`${baseUrl}${url}`, {
         ...options,
         headers: {
           ...options?.headers,
@@ -78,20 +79,41 @@ export default function useApi() {
         credentials: "include",
       });
 
-      // if the response status indicates not logged in, clear data and redirect to login
-      // if (response.status === 401) {
-      //   //
-      //   //
-      //   return;
-      // }
-
       if (response.status === 401 || response.status === 403) {
-        setUser(null);
-        navigate("/login");
+        // try to refresh again
 
-        throw {
-          message: "Login expired or not logged in. Please log in again!",
-        };
+        try {
+          const isLoggedInNow = await refresh();
+          console.log({ canRefresh: isLoggedInNow });
+
+          if (isLoggedInNow) {
+            // continue
+            // try fetchiong again
+            response = await fetch(`${baseUrl}${url}`, {
+              ...options,
+              headers: {
+                ...options?.headers,
+                // "x-api-key": import.meta.env.VITE_API_KEY as string,
+                // bearer token
+                // "Authorization": `Bearer ${accessToken}`,
+              },
+              credentials: "include",
+            });
+
+            if (response.status === 401 || response.status === 403) {
+              throw new Error("Refresh failed");
+            }
+          } else {
+            throw new Error("Refresh failed");
+          }
+        } catch (e) {
+          setUser(null);
+          navigate("/login");
+
+          throw {
+            message: "Login expired or not logged in. Please log in again!",
+          };
+        }
       }
 
       const data: Q = await response.json();

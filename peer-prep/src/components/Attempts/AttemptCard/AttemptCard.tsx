@@ -1,9 +1,13 @@
 import {
   Avatar,
   Badge,
+  Box,
   Button,
   Collapse,
+  Divider,
   Flex,
+  Group,
+  Modal,
   Stack,
   Text,
   Title,
@@ -19,6 +23,7 @@ import { UserAttempt } from "../../../types/attempts";
 import useApi, { SERVICE, ServerResponse } from "../../../hooks/useApi";
 import { UserResponseData } from "../../../types/user";
 import { notifications } from "@mantine/notifications";
+import { useDisclosure } from "@mantine/hooks";
 
 interface AttemptCardProps {
   attempt: UserAttempt;
@@ -41,6 +46,19 @@ const AttemptCard = memo(function AttemptCard({
 
   const handleCardClick = () => {
     navigate(`/session/summary/${roomId}`, { state: { roomIdReceived: roomId, attemptReceived: attempt } });
+  };
+
+  const handleDelete = () => {
+    console.log(roomId)
+    fetchData<ServerResponse<{attempt: UserAttempt}>>(`/history-service/attempt/${roomId}`, SERVICE.HISTORY, {
+      method: "DELETE",
+    }).then((response) => {
+      notifications.show({
+        message: "Attempt deleted successfully",
+        color: "green",
+      });
+      window.location.reload();
+    });
   };
 
   const [completedAt, setCompletedAt] = useState("");
@@ -80,8 +98,29 @@ const AttemptCard = memo(function AttemptCard({
 
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const [opened, { open, close }] = useDisclosure(false);
+
   return (
     <>
+      <Modal opened={opened} onClose={close} title="Confirm deletion" centered>
+        <Stack>
+          <Box py="lg">Are you sure you want to delete this attempt?</Box>
+          <Divider />
+          <Group justify="end">
+            <Button size="sm" variant="subtle" color="gray" onClick={close}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              color="red"
+              onClick={() => handleDelete()}
+              variant="filled"
+            >
+              Delete
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
       <Flex
         className={`${classes.accordion} ${classes[difficultyString]} ${
           classes[isExpanded ? "expanded" : "collapsed"]
@@ -115,18 +154,19 @@ const AttemptCard = memo(function AttemptCard({
               </Flex>
 
               {/* <SimpleGrid cols={2}> */}
-              <Flex>
+              <Flex gap={8}>
                 <Button onClick={handleCardClick} variant="light">
                   View
+                </Button>
+                <Button onClick={open} variant="light" color="red">
+                  Delete
                 </Button>
               </Flex>
 
             </Flex>
             {/* Collaborator Details */}
 
-            <Text className={classes.accordionBodyDescription} lineClamp={64}>
-              {question.description.descriptionText}
-            </Text>
+            <div dangerouslySetInnerHTML={{ __html: question.description.descriptionHtml }}></div>
             {/* </SimpleGrid> */}
           </Flex>
         </Collapse>

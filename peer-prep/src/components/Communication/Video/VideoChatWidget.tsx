@@ -61,9 +61,11 @@ type ChatRoomUser = {
 export default function VideoChatWidget({
   otherUser,
   onVideoCallDisconnect,
+  roomId,
 }: {
   otherUser?: ChatRoomUser;
   onVideoCallDisconnect: () => void;
+  roomId: string;
 }) {
   const auth = useAuth();
 
@@ -89,7 +91,7 @@ export default function VideoChatWidget({
       console.log("DEBUG: no auth.user", auth);
       return;
     }
-    const peer = new Peer(auth.user._id, {
+    const peer = new Peer(`${roomId}-${auth.user._id}`, {
       config: servers,
     });
 
@@ -157,7 +159,7 @@ export default function VideoChatWidget({
     }
 
     // call will fail if the other user is not ready to receive the call
-    const remotePeerId = otherUser?.userId;
+    const remotePeerId = `${roomId}-${otherUser?.userId}`;
 
     console.log("DEBUG: calling", remotePeerId);
     console.log("DEBUG: READY TO CALL");

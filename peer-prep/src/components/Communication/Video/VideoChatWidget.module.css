@@ -1,0 +1,88 @@
+.videoContainer {
+  position: fixed;
+  /* bottom: 16px;
+  right: 16px; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 300px !important;
+  height: 200px !important;
+  /* width: 320px;
+  height: 240px; */
+  /* background-color: black; */
+  z-index: 20;
+  cursor: grab;
+}
+
+.selfVideoContainer {
+  position: relative;
+
+  .selfVideoDescriptor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 4px;
+    font-size: 12px;
+    z-index: 1;
+  }
+
+  .selfEndCallButton {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+  }
+}
+
+.otherVideoContainer {
+  position: relative;
+
+  .otherVideoDescriptor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 4px;
+    font-size: 12px;
+    z-index: 1;
+  }
+  .otherEndCallButton {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+  }
+}
+
+.shakyButton {
+  animation: shake 0.85s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  10%,
+  90% {
+    transform: translate3d(-0.25px, 0, 0);
+  }
+  20%,
+  80% {
+    transform: translate3d(0.75px, 0, 0);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-1px, 0, 0);
+  }
+  40%,
+  60% {
+    transform: translate3d(1px, 0, 0);
+  }
+}

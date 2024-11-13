@@ -24,24 +24,64 @@ jobs:
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v4
+
       - name: Setup Node ${{ matrix.node }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
 
-  scans:
-    # do code scanning stuff here
-    needs: test
-    name: Code Scanning
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v4
+      - name: Install Frontend Node Dependencies
+        working-directory: peer-prep
+        run: npm ci
 
-  images:
-    # build images here
-    name: Build Production Images
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v4
+      - name: Test Build on Frontend
+        working-directory: peer-prep
+        run: npm run build
+
+      - name: Test User Service
+        working-directory: user-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Question Service
+        working-directory: question-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Matching Service
+        working-directory: matching-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Collaboration Service
+        working-directory: collaboration-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Communication Service
+        working-directory: communication-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Run Service
+        working-directory: run-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test History Service
+        working-directory: history-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Gen AI Service
+        working-directory: gen-ai-service
+        run: |
+          npm ci
+          npm run test

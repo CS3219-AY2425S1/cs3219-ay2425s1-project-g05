@@ -6,13 +6,15 @@ import {
   BrowserRouter,
   createBrowserRouter,
   RouterProvider,
+  useLocation,
+  useNavigate,
 } from "react-router-dom";
 import Home from "./pages/Home/HomePage.tsx";
 import LoginOrRegisterPage from "./pages/Login/LoginPage.tsx";
 import { Button, createTheme, MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
-import '@mantine/tiptap/styles.css';
+import "@mantine/tiptap/styles.css";
 
 import ApplicationWrapper from "./components/ApplicationWrapper.tsx";
 import ProtectedRouteWrapper from "./pages/ProtectedRouteWrapper.tsx";
@@ -25,7 +27,15 @@ import CreateQuestionPage from "./pages/Questions/CreateQuestionPage/CreateQuest
 import EditQuestionPage from "./pages/Questions/EditQuestionPage/EditQuestionPage.tsx";
 import { Notifications } from "@mantine/notifications";
 import AdminRouteWrapper from "./pages/AdminRouteWrapper.tsx";
+import SessionSummaryPage from "./pages/Session/Summary/SessionSummaryPage.tsx";
 import ReadQuestionPage from "./pages/Questions/ReadQuestionPage/ReadQuestionPage.tsx";
+import SessionPage from "./pages/Session/SessionPage/SessionPage.tsx";
+
+import "@fontsource/inter";
+import { AIProvider } from "./hooks/useAi.tsx";
+import ProtectedSessionWrapper from "./pages/Session/ProtectedSessionWrapper.tsx";
+import ChangePasswordPage from "./pages/ChangePassword/ChangePasswordPage.tsx";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -60,7 +70,9 @@ const router = createBrowserRouter([
                       fetch(
                         `${
                           import.meta.env.VITE_API_URL_QUESTION
-                        }/question-service`
+                        }/question-service`, {
+                          credentials: 'include',
+                        }
                       ),
                     // fetch(
                     //   `https://virtserver.swaggerhub.com/PeerPrep/question-service/1.0.0/api/question-service`
@@ -81,7 +93,10 @@ const router = createBrowserRouter([
                       fetch(
                         `${
                           import.meta.env.VITE_API_URL_QUESTION
-                        }/question-service/id/${params.id}`
+                        }/question-service/id/${params.id}`,
+                        {
+                          credentials: 'include',
+                        }
                       ),
                   },
                 ],
@@ -92,6 +107,10 @@ const router = createBrowserRouter([
           {
             path: "/dashboard",
             element: <DashboardPage />,
+          },
+          {
+            path: "/change-password",
+            element: <ChangePasswordPage />,
           },
           {
             path: "/learn",
@@ -118,6 +137,20 @@ const router = createBrowserRouter([
                 path: "/session/search",
                 element: <SearchingPage />,
               },
+              {
+                path: "/session/summary/:roomId",
+                element: <SessionSummaryPage />,
+              },
+              {
+                path: "/session/",
+                element: <ProtectedSessionWrapper />,
+                children: [
+                  {
+                    path: ":roomId",
+                    element: <SessionPage />,
+                  },
+                ],
+              },
             ],
           },
         ],
@@ -127,20 +160,25 @@ const router = createBrowserRouter([
 ]);
 
 const theme = createTheme({
-  fontFamily: "Inter",
+  fontFamily: "Inter, sans-serif",
   defaultRadius: "md",
   cursorType: "pointer",
   primaryColor: "cyan",
+  components: {
+    Button: {
+      defaultProps: {
+        variant: "light",
+      },
+    },
+  },
 });
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <MantineProvider theme={theme}>
-      <Notifications />
-      <RouterProvider router={router}></RouterProvider>
-    </MantineProvider>
-    {/* <BrowserRouter>
-      <App />
-    </BrowserRouter> */}
-  </StrictMode>
+  // <StrictMode>
+  <MantineProvider theme={theme}>
+    <Notifications />
+    <RouterProvider router={router}></RouterProvider>
+  </MantineProvider>
+
+  // </StrictMode>
 );

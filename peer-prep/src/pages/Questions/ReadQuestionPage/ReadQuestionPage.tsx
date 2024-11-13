@@ -103,7 +103,12 @@ export default function ReadQuestionPage() {
               <Button size="sm" variant="subtle" color="gray" onClick={close}>
                 Cancel
               </Button>
-              <Button size="sm" color="red" onClick={() => handleDelete()}>
+              <Button
+                size="sm"
+                color="red"
+                onClick={() => handleDelete()}
+                variant="filled"
+              >
                 Delete
               </Button>
             </Group>
@@ -118,7 +123,7 @@ export default function ReadQuestionPage() {
                   <IconEdit style={{ width: rem(16), height: rem(16) }} />
                 }
                 size="sm"
-                variant="light"
+                // variant="light"
                 component={Link}
                 to={`/questions/edit/${question._id}`}
               >
@@ -130,7 +135,7 @@ export default function ReadQuestionPage() {
                 }
                 size="sm"
                 color="red"
-                variant="light"
+                // variant="light"
                 onClick={open}
               >
                 Delete
@@ -172,9 +177,8 @@ export default function ReadQuestionPage() {
             />
           </SimpleGrid>
 
-          <Text className={classes.description}>
-            {question.description.descriptionText}
-          </Text>
+          <div dangerouslySetInnerHTML={{ __html: question.description.descriptionHtml }}></div>
+
         </Stack>
       </Container>
     );

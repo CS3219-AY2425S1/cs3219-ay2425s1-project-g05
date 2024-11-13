@@ -1,0 +1,2 @@
+# uncomment the line below when building image and pushing to docker hub
+# .env

@@ -7,6 +7,7 @@ import {
     ormFindAllPendingUsers,
     ormDeletePendingUserByDocId
 } from "../models/orm.js";
+import axios from 'axios';
 
 export async function onDisconnect(socket) {
     try {
@@ -49,6 +50,9 @@ export async function onCancelMatch(socket) {
 
 export async function onCreateMatch(socket, data, io) {
     try {
+        console.log("ONCREATEMATCH: ")
+        console.log(data)
+        console.log('----------------')
         const { difficulties, categoriesId, userId } = data;
         const socketId = socket.id;
         const priority = categoriesId.length; // Priority based on number of categories selected
@@ -75,8 +79,8 @@ export async function onCreateMatch(socket, data, io) {
 
         // Find if there is a match with a pending user
         const matchedUser = await ormFindPendingUserByCriteria({ difficulties, categoriesId, userId });
-        if (!matchedUser) {
 
+        async function onNoMatch() {
             // No match found
             console.log(`No matching users with the criteria, create new match`);
 
@@ -119,6 +123,10 @@ export async function onCreateMatch(socket, data, io) {
 
             // Emit finding-match event
             socket.emit('finding-match');
+        }
+        if (!matchedUser) {
+            await onNoMatch()
+
             return;
         } else {
 
@@ -126,36 +134,66 @@ export async function onCreateMatch(socket, data, io) {
             console.log(`Match found with ${matchedUser.userId}, with details:`);
             console.log(matchedUser);
 
-            // Delete pending user from database which should be in queue
-            const deletedUser = await ormDeletePendingUserByUserId(matchedUser.userId);
-            if (!deletedUser) {
-                throw new Error(`Could not delete matched user by userId after match found`);
+            // try to get a question first
+            try {
+                // Find intersection of difficulties and categories in both users
+                const commonDifficulties = difficulties.filter(d => matchedUser.difficulties.includes(d));
+                const commonCategories = categoriesId.filter(c => matchedUser.categoriesId.includes(c));
+                console.log(`Common difficulties: ${commonDifficulties}`);
+                console.log(`Common categories: ${commonCategories}`);
+
+                // get question first
+                const resp = await axios.get(
+                    process.env.QUESTION_SERVICE_ENDPOINT ??
+                    'http://localhost:8003/api/question-service/random',
+                    {
+                        params: {
+                            categoriesId: commonCategories,
+                            difficulty: commonDifficulties,
+                        },
+                    }
+                );
+
+                const questionInResponse = resp.data['data']['question'];
+                if (questionInResponse === null || questionInResponse === undefined) {
+                    console.log('Quesiton is missing');
+                    throw new Error('Unable to query for question')
+                }
+
+                // Delete pending user from database which should be in queue
+                const deletedUser = await ormDeletePendingUserByUserId(matchedUser.userId);
+                if (!deletedUser) {
+                    throw new Error(`Could not delete matched user by userId after match found`);
+                }
+
+                // Get and log pending user queue
+                const queue = await ormFindAllPendingUsers();
+                console.log(`Pending user queue after match:`);
+                console.log(queue);
+
+
+                // Create match object
+                const matchObject = {
+                    matchId: matchedUser._id.toString(),
+                    userIds: [userId, matchedUser.userId],
+                    difficulties: commonDifficulties,
+                    categoriesId: commonCategories,
+                    question: questionInResponse
+                }
+                console.log(`Match object:`);
+                console.log(matchObject);
+
+                // Emit found-match event to both users
+                socket.emit("found-match", matchObject);
+                io.to(matchedUser.socketId).emit("found-match", matchObject);
+
+            } catch (e) {
+                // no question found :(
+                console.log(e)
+                onNoMatch()
             }
 
-            // Get and log pending user queue
-            const queue = await ormFindAllPendingUsers();
-            console.log(`Pending user queue after match:`);
-            console.log(queue);
 
-            // Find intersection of difficulties and categories in both users
-            const commonDifficulties = difficulties.filter(d => matchedUser.difficulties.includes(d));
-            const commonCategories = categoriesId.filter(c => matchedUser.categoriesId.includes(c));
-            console.log(`Common difficulties: ${commonDifficulties}`);
-            console.log(`Common categories: ${commonCategories}`);
-
-            // Create match object
-            const matchObject = {
-                matchId: matchedUser._id.toString(),
-                userIds: [userId, matchedUser.userId],
-                difficulties: commonDifficulties,
-                categoriesId: commonCategories,
-            }
-            console.log(`Match object:`);
-            console.log(matchObject);
-
-            // Emit found-match event to both users
-            socket.emit("found-match", matchObject);
-            io.to(matchedUser.socketId).emit("found-match", matchObject);
         }
     } catch (error) {
         console.log(`Error when creating match: ${error.message}`);

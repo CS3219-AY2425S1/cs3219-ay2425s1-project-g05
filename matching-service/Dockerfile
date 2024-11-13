@@ -1,8 +1,5 @@
 # PeerPrep Matching Service Dockerfile
 # 
-# This file is used for creating a PUBLIC container using PUBLICY
-# available images.
-# 
 # References:
 # https://github.com/awslabs/aws-lambda-web-adapter/tree/main/examples/expressjs
 

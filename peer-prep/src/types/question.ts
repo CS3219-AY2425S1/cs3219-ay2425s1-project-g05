@@ -1,3 +1,5 @@
+import { ServerResponse } from "../hooks/useApi";
+
 export type Complexity = "EASY" | "MEDIUM" | "HARD";
 
 export type TestCase = {
@@ -6,6 +8,7 @@ export type TestCase = {
   isPublic: boolean;
   expectedOutput: string;
   meta: { [key: string]: any };
+  input: string
 };
 
 export type QuestionOlsd = {
@@ -23,14 +26,27 @@ export type Question = {
   title: string;
   description: { descriptionText: string, descriptionHtml: string };
   categories: string[];
+  categoriesId: number[];
   difficulty: Complexity;
   isDeleted: boolean;
   solutionCode: string;
   templateCode: string;
   link: string;
   testCases: TestCase[];
+  meta: { [key: string]: any };
   __v: number;
 };
+
+// AttemptQuestion is a subset of Question, it does not store test cases, template code, isDeleted, categories, and __v.
+export type AttemptQuestion = {
+  _id: string;
+  title: string;
+  description: { descriptionText: string, descriptionHtml: string };
+  categoriesId: number[];
+  difficulty: Complexity;
+  solutionCode: string;
+  link: string;
+}
 
 export interface QuestionResponseData {
   question?: Question;
@@ -39,7 +55,15 @@ export interface QuestionResponseData {
 }
 
 export interface CategoryResponseData {
-  categories: string[];
+  categories: {
+    categoriesId: number[]
+    categories: string[]
+  }
+}
+
+export type Category = {
+  category: string,
+  id: number | string
 }
 
 export const SAMPLE_QUESTIONS: any[] = [{
@@ -81,3 +105,30 @@ list contains a cycle.`,
   complexity: "medium",
   link: "https://leetcode.com/problems/linked-list-cycle/"
 }]
+
+
+/* TEST CASES TYPES */
+export type TestCaseResult = {
+
+  stderr: string,
+  isPassed: boolean,
+  stdout: string | null,
+  testCaseDetails: {
+    testCaseId: string,
+    input: string,
+    expectedOutput: string | null
+  },
+  memory: number,
+  time: string,
+}
+
+export type PartialResult = {
+  result: TestCaseResult
+}
+
+export type FinalResult = {
+  code: string,
+  questionId: string,
+  results: TestCaseResult[]
+}
+export type ExecutionResultSchema = ServerResponse<PartialResult> | ServerResponse<FinalResult>

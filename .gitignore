@@ -1,2 +1,9 @@
 node_modules/
 .env
+
+# k8s
+1-Kubernetes-Secrets.yml
+.old
+
+# judege0
+judge0.conf

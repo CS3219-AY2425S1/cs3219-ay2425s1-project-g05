@@ -10,13 +10,12 @@ export function verifyAuthMiddleware(req, res, next) {
 
     // Verify access token
     const result = verifyAccessToken(accessToken);
-    console.log(result)
     if (!result) {
         return res.status(403).json({ message: 'Invalid token provided' })
     }
 
     // Set user object in request
-    req.user = { email: result.email, displayName: result.displayName, isAdmin: result.isAdmin };
+    req.user = { ...result };
 
     return next();
 }
@@ -31,7 +30,6 @@ export function verifyIsAdminMiddleware(req, res, next) {
 
     // Verify access token
     const result = verifyAccessToken(accessToken);
-    console.log(result)
     if (!result) {
         return res.status(403).json({ message: 'Invalid token provided' })
     }

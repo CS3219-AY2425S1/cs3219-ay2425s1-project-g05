@@ -88,6 +88,7 @@ export default function QuestionsPage() {
               to="/questions/create"
               size="lg"
               leftSection={<IconPlus />}
+              variant="filled"
             >
               Add
             </Button>

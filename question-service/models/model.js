@@ -1,18 +1,20 @@
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
+
+const categories = [ 0, 1, 2, 3, 4, 5, 6, 7 ];
 const testCaseSchema = new Schema({
   testCode: {
     type: String,
     required: [true, "Test code is required"],
   },
+  input: {
+    type: String,
+    required: [true, "Input is required"],
+  },
   isPublic:{
     type: Boolean,
     required: [true, "isPublic status is required"]
-  },
-  meta: {
-    type: Schema.Types.Mixed,
-    // required: [true, "Meta is required"], -- Assuming optional for now
   },
   expectedOutput: {
     type: String,
@@ -46,10 +48,11 @@ const questionSchema = new Schema({
   },
   categoriesId: {
     type: [Number],
+    enum: categories,
     required: [true, "Categories is required"],
     validate: {
       validator: (value) => {
-        return value.length > 0;
+        return value.every((category) => categories.includes(category));
       },
     },
   },
@@ -70,7 +73,8 @@ const questionSchema = new Schema({
     },
   },
   templateCode: {
-    type: String
+    type: String,
+    required: [true, "Template code is required"],
   },
   solutionCode: {
     type: String,

@@ -25,12 +25,20 @@ app.get("/healthz", (req, res) => {
     res.status(200).json({ message: "Connected to /healthz route of user-service" });
 });
 
-// Connect to DB, then listen at port
-await connectToDB().then(() => {
-    console.log("MongoDB Connected!");
+// If in test mode, just listen at port
+if (process.env.NODE_ENV === 'test') {
+    console.log("In test mode, don't connect to prod DB")
     app.listen(process.env.PORT);
     console.log(`User service listening at port ${process.env.PORT}`)
-}).catch((error) => {
-    console.log("Failed to connect to DB");
-    console.log(error);
-});
+} else {
+    await connectToDB().then(() => {
+        console.log("MongoDB Connected!");
+        app.listen(process.env.PORT);
+        console.log(`User service listening at port ${process.env.PORT}`)
+    }).catch((error) => {
+        console.log("Failed to connect to DB");
+        console.log(error);
+    });
+}
+
+export default app;

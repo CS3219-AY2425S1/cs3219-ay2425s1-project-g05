@@ -1,3 +1,6 @@
+# References https://docs.docker.com/build/ci/github-actions/
+# https://stackoverflow.com/questions/77740410/github-docker-build-push-action-with-multiple-architectures-is-slow
+
 name: 'Production Environment CI/CD Pipeline'
 
 on:
@@ -15,106 +18,299 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         node: [20, 22]
-    name: Run tests on ${{ matrix.os }} with Node ${{ matrix.node }}
+    name: Run Tests on ${{ matrix.os }} with Node ${{ matrix.node }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v4
+
       - name: Setup Node ${{ matrix.node }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
 
-  scans:
-    # do code scanning stuff here
+      - name: Test Build Frontend
+        working-directory: peer-prep
+        run: |
+          npm ci
+          npm run build
+
+      - name: Test User Service
+        working-directory: user-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Question Service
+        working-directory: question-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Matching Service
+        working-directory: matching-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Collaboration Service
+        working-directory: collaboration-service
+        env:
+          ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Communication Service
+        working-directory: communication-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Run Service
+        working-directory: run-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test History Service
+        working-directory: history-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Gen AI Service
+        working-directory: gen-ai-service
+        run: |
+          npm ci
+          npm run test
+
+  build:
+    # build container for both x86 and arm platforms
+    environment: production
     needs: test
-    name: Code Scanning
+    name: Build Production Containers and Push to Docker Hub
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        continue-on-error: true
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        continue-on-error: true
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Frontend Image
+        continue-on-error: true
+        uses: docker/build-push-action@v6
+        with:
+          context: ./peer-prep
+          file: ./peer-prep/Dockerfile
+          push: true
+          platforms: linux/${{ matrix.arch }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-frontend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-frontend:${{ vars.DOCKER_IMAGE_VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-frontend:${{ github.sha }}
+
+      - name: Build User Service Image
+        continue-on-error: true
+        uses: docker/build-push-action@v6
+        with:
+          context: ./user-service
+          file: ./user-service/Dockerfile
+          push: true
+          platforms: linux/${{ matrix.arch }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-user-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-user-service:${{ vars.DOCKER_IMAGE_VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-user-service:${{ github.sha }}
+
+      - name: Build Question Service Image
+        continue-on-error: true
+        uses: docker/build-push-action@v6
+        with:
+          context: ./run-service
+          file: ./run-service/Dockerfile
+          push: true
+          platforms: linux/${{ matrix.arch }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-question-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-question-service:${{ vars.DOCKER_IMAGE_VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-question-service:${{ github.sha }}
+
+      - name: Build Matching Service Image
+        continue-on-error: true
+        uses: docker/build-push-action@v6
+        with:
+          context: ./matching-service
+          file: ./matching-service/Dockerfile
+          push: true
+          platforms: linux/${{ matrix.arch }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-matching-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-matching-service:${{ vars.DOCKER_IMAGE_VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-matching-service:${{ github.sha }}
+
+      - name: Build Collaboration Service Image
+        continue-on-error: true
+        uses: docker/build-push-action@v6
+        with:
+          context: ./collaboration-service
+          file: ./collaboration-service/Dockerfile
+          push: true
+          platforms: linux/${{ matrix.arch }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-collaboration-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-collaboration-service:${{ vars.DOCKER_IMAGE_VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-collaboration-service:${{ github.sha }}
+
+      - name: Build Communication Service Image
+        continue-on-error: true
+        uses: docker/build-push-action@v6
+        with:
+          context: ./communication-service
+          file: ./communication-service/Dockerfile
+          push: true
+          platforms: linux/${{ matrix.arch }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-communication-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-communication-service:${{ vars.DOCKER_IMAGE_VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-communication-service:${{ github.sha }}
+
+      - name: Build Run Service Image
+        continue-on-error: true
+        uses: docker/build-push-action@v6
+        with:
+          context: ./run-service
+          file: ./run-service/Dockerfile
+          push: true
+          platforms: linux/${{ matrix.arch }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-run-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-run-service:${{ vars.DOCKER_IMAGE_VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-run-service:${{ github.sha }}
+
+      - name: Build History Service Image
+        continue-on-error: true
+        uses: docker/build-push-action@v6
+        with:
+          context: ./history-service
+          file: ./history-service/Dockerfile
+          push: true
+          platforms: linux/${{ matrix.arch }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-history-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-history-service:${{ vars.DOCKER_IMAGE_VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-history-service:${{ github.sha }}
+
+      - name: Build Gen AI Service Image
+        continue-on-error: true
+        uses: docker/build-push-action@v6
+        with:
+          context: ./gen-ai-service
+          file: ./gen-ai-service/Dockerfile
+          push: true
+          platforms: linux/${{ matrix.arch }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-gen-ai-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-gen-ai-service:${{ vars.DOCKER_IMAGE_VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/peerprep-gen-ai-service:${{ github.sha }}
+
+  deploy:
+    needs: test
+    environment: production
+    name: Deploy Production Environment
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v4
 
-  build:
-    # build stuff here
-    environment: production
-    name: Build for Production Environment
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v4
       - name: Setup Node 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.1.0
         env:
-          AWS_REGION: 'ap-southeast-1'
+          # References https://stackoverflow.com/questions/58033366/how-to-get-the-current-branch-within-github-actions
+          CURR_BRANCH: ${{ github.head_ref || github.ref_name }}
+          USER_SERVICE_SECRETS: ${{ secrets.USER_SERVICE_SECRETS }}
+          QUESTION_SERVICE_SECRETS: ${{ secrets.QUESTION_SERVICE_SECRETS }}
+          MATCHING_SERVICE_SECRETS: ${{ secrets.MATCHING_SERVICE_SECRETS }}
+          COLLABORATION_SERVICE_SECRETS: ${{ secrets.COLLABORATION_SERVICE_SECRETS }}
+          COMMUNICATION_SERVICE_SECRETS: ${{ secrets.COMMUNICATION_SERVICE_SECRETS }}
+          HISTORY_SERVICE_SECRETS: ${{ secrets.HISTORY_SERVICE_SECRETS }}
+          RUN_SERVICE_SECRETS: ${{ secrets.RUN_SERVICE_SECRETS }}
+          GEN_AI_SERVICE_SECRETS: ${{ secrets.GEN_AI_SERVICE_SECRETS }}
+          FRONTEND_SECRETS: ${{ secrets.FRONTEND_SECRETS }}
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{  env.AWS_REGION }}
-      - name: Build and Deploy Frontend
-        working-directory: peer-prep
-        run: |
-          npm i
-          npm run build
-      - name: Upload to S3
-        working-directory: peer-prep/dist
-        run: |
-          aws s3 sync . s3://peerprep
-      - name: S3 bucket URL
-        run: echo "http://peerprep.s3-website-ap-southeast-1.amazonaws.com/"
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script_stop: true
+          envs: CURR_BRANCH,USER_SERVICE_SECRETS,QUESTION_SERVICE_SECRETS,MATCHING_SERVICE_SECRETS,COLLABORATION_SERVICE_SECRETS,COMMUNICATION_SERVICE_SECRETS,HISTORY_SERVICE_SECRETS,RUN_SERVICE_SECRETS,FRONTEND_SECRETS,GEN_AI_SERVICE_SECRETS
+          script: |
+            . .nvm/nvm.sh
+            nvm use 20
 
-  # deploy:
-  #   # deploy stuff here
-  #   needs: images
-  #   name: Deploy images and infrastructure here
-  #   strategy:
-  #     matrix:
-  #       providers:
-  #         [
-  #           {
-  #             init: './terraform/init/aws',
-  #             deploy: './terraform/env/aws',
-  #             csp: 'AWS',
-  #           },
-  #           {
-  #             init: './terraform/init/aws',
-  #             deploy: './terraform/env/aws',
-  #             csp: 'GCP',
-  #           },
-  #         ]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout Codebase
-  #       uses: actions/checkout@v4
+            cd cs3219-ay2425s1-project-g05
+            git checkout $CURR_BRANCH
+            git pull
 
-  #     - name: Setup Terraform for ${{ matrix.providers.csp }}
-  #       uses: hashicorp/setup-terraform@v3
+            # echo in .env vars and save them into the directories
+            cd question-service
+            echo $QUESTION_SERVICE_SECRETS | base64 --decode > .env
+            cd ..
 
-  #     - name: Ensure Provision of Remote State Backends on ${{ matrix.providers.csp }}
-  #       working-directory: ${{ matrix.providers.init }}
-  #       run: terraform init
+            cd matching-service
+            echo $MATCHING_SERVICE_SECRETS | base64 --decode > .env
+            cd ..
 
-  #     - name: Check and Deploy State Backends on ${{ matrix.providers.csp }}
-  #       working-directory: ${{ matrix.providers.init }}
-  #       run: terraform apply -auto-approve
-  #       continue-on-error: true # assumes that the buckets are already provisioned
+            cd collaboration-service
+            echo $COLLABORATION_SERVICE_SECRETS | base64 --decode > .env
+            cd ..
 
-  #     # commands taken from https://github.com/gruntwork-io/terragrunt-action
-  #     - name: Initialise Terraform Infrastructure with Terragrunt on ${{ matrix.providers.csp }}
-  #       uses: gruntwork-io/terragrunt-action@v2
-  #       with:
-  #         tf_version: ''
-  #         tg_version: ''
-  #         tg_dir: ${{ matrix.providers.deploy }}
-  #         tg_command: 'plan'
+            cd communication-service
+            echo $COMMUNICATION_SERVICE_SECRETS | base64 --decode > .env
+            cd ..
 
-  #     - name: Setup Infrastructure with Terragrunt on ${{ matrix.providers.csp }}
-  #       uses: gruntwork-io/terragrunt-action@v2
-  #       with:
-  #         tf_version: ''
-  #         tg_version: ''
-  #         tg_dir: ${{ matrix.providers.deploy }}
-  #         tg_command: 'apply'
+            cd history-service
+            echo $HISTORY_SERVICE_SECRETS | base64 --decode > .env
+            cd ..
+
+            cd run-service
+            echo $RUN_SERVICE_SECRETS | base64 --decode > .env
+            cd ..
+
+            cd gen-ai-service
+            echo $GEN_AI_SERVICE_SECRETS | base64 --decode > .env
+            cd ..
+
+            cd user-service
+            echo $USER_SERVICE_SECRETS | base64 --decode > .env
+            cd ..
+
+            cd peer-prep
+            echo $FRONTEND_SECRETS | base64 --decode > .env.production
+            npm install
+            npm run build
+
+            # copy files using rsync
+            rsync -a --no-owner --no-times --no-group --no-perms --delete dist/ /var/www/peerprep.marcussoh.com/
+            cd ..
+
+            # handle docker compose
+            docker compose down
+            docker compose up --build -d

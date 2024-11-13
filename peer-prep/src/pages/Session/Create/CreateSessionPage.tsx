@@ -20,12 +20,19 @@ import {
   Progress,
 } from "@mantine/core";
 import classes from "./CreateSessionPage.module.css";
-import { useEffect, useState } from "react";
-import { capitalizeFirstLetter } from "../../../utils/utils";
+import { useEffect, useRef, useState } from "react";
+import {
+  capitalizeFirstLetter,
+  convertToCombinedCategoryId,
+} from "../../../utils/utils";
 import { Link, useLoaderData, useNavigate } from "react-router-dom";
 import useApi, { ServerResponse, SERVICE } from "../../../hooks/useApi";
-import { CategoryResponseData } from "../../../types/question";
-import { socket } from "../../../websockets/socket";
+import {
+  Category,
+  CategoryResponseData,
+  Question,
+} from "../../../types/question";
+import { socket } from "../../../websockets/matching/socket";
 import { useAuth } from "../../../hooks/useAuth";
 import { displayName } from "react-quill";
 import SearchingPage from "../Search/SearchingPage";
@@ -41,6 +48,7 @@ import SearchingImage from "../../../assets/searchimage.svg";
 import MatchImage from "../../../assets/matchimage.svg";
 
 import AlertBox from "../../../components/Alert/AlertBox";
+import { notifications } from "@mantine/notifications";
 
 // Arrays
 // Algorithms
@@ -56,36 +64,61 @@ enum Status {
   SEARCHING,
   MATCH_FOUND,
   NO_MATCH,
+  WAITING_FOR_REPLY,
+}
+
+interface CollabResponse {
+  roomId: string;
+  question: Question;
 }
 
 export default function CreateSessionPage() {
   // TODO: query the question service to get a list of categories and difficulties
   const { fetchData } = useApi();
+  const { refreshForWs } = useAuth();
   const navigate = useNavigate();
 
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [intervalTimer, setIntervalTimer] = useState<NodeJS.Timeout | null>();
-  let timer: NodeJS.Timeout | null = null;
+
+  const timer = useRef<NodeJS.Timeout | null>(null);
   const [isTimerPaused, setIsTimerPaused] = useState(false);
+
+  const [redirectCountdown, setRedirectCountdown] = useState(3);
+  const [matchFound, setMatchFound] = useState(false);
 
   useEffect(() => {
     fetchData<ServerResponse<CategoryResponseData>>(
       `/question-service/categories`,
       SERVICE.QUESTION
-    ).then((data) => {
-      const categories = data.data.categories;
-      const transformedCategories = categories.map((category: string) => ({
-        value: category.toUpperCase(),
+    ).then((response) => {
+      const categories = response.data.categories.categories || [];
+      const categoriesId = response.data.categories.categoriesId || [];
+
+      const convertedCategories = convertToCombinedCategoryId(
+        categories,
+        categoriesId
+      );
+      const transformedCategories = convertedCategories.map((c) => ({
+        value: c.id.toString(),
         label:
-          category.charAt(0).toUpperCase() + category.slice(1).toLowerCase(),
+          c.category.charAt(0).toUpperCase() +
+          c.category.slice(1).toLowerCase(),
       }));
 
-      setCategories(transformedCategories.map((v) => v.value));
+      setCategories(transformedCategories);
     });
   }, []);
 
-  const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<
+    {
+      value: string;
+      label: string;
+    }[]
+  >([]);
+  const [selectedCategoriesId, setSelectedCategoriesId] = useState<string[]>(
+    []
+  );
 
   const [difficulties, setDifficulties] = useState<string[]>([
     "easy",
@@ -99,7 +132,7 @@ export default function CreateSessionPage() {
   const { user } = useAuth();
 
   const canSearch =
-    selectedCategories.length > 0 && selectedDifficulties.length > 0;
+    selectedCategoriesId.length > 0 && selectedDifficulties.length > 0;
 
   // const data = useLoaderData() as ServerResponse<[string[]]>;
 
@@ -112,7 +145,10 @@ export default function CreateSessionPage() {
 
   // initialize socket
   useEffect(() => {
-    socket.connect();
+    // refresh first if possible
+    refreshForWs().then(() => {
+      socket.connect();
+    });
 
     function onConnect() {
       console.log("connected to server");
@@ -125,32 +161,79 @@ export default function CreateSessionPage() {
       setActive(1);
 
       // clear old timer
-      if (timer) {
-        clearInterval(timer);
+      if (timer.current) {
+        clearInterval(timer.current);
       }
       // setup a timer
-      timer = setInterval(() => {
+      timer.current = setInterval(() => {
         setTimeElapsed((prev) => prev + 1);
       }, 1000);
     }
 
-    function onFoundMatch(data) {
-      console.log("found a match");
-
-      // 10 seconds to redirect to the room
-      setTimeout(() => {
-        // temporary redirect to dashboard
-        navigate("/dashboard");
-      }, 10 * 1000);
-
-      console.log({ data });
+    async function onFoundMatch(data) {
+      console.log("found a match", data);
 
       setStatus(Status.MATCH_FOUND);
       setActive(2);
 
-      // stop the timer
-      if (timer) {
-        clearInterval(timer);
+      try {
+        // Create a room with the matched users and question for the session
+        fetchData<ServerResponse<CollabResponse>>(
+          `/collaboration-service/create-room`,
+          SERVICE.COLLAB,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              users: data.userIds,
+              question: data.question,
+            }),
+          }
+        )
+          .then((response) => {
+            // console.log("response from collab service", response.data);
+            const roomId = response.data["roomId"];
+            const question = response.data["question"];
+
+            // Get the other user id from match object returned
+            const userIds = data["userIds"];
+            const otherUser = userIds.find((id: String) => id !== user._id);
+
+            console.log("room id after creating room ", roomId);
+            console.log("question after creating room", question);
+
+            setMatchFound(true); // Display the success component when a match is found
+            // Start countdown timer
+            const interval = setInterval(() => {
+              setRedirectCountdown((prevCountdown) => {
+                if (prevCountdown <= 1) {
+                  clearInterval(interval);
+                  goToRoom(question, roomId, otherUser); // Redirect to room
+                }
+                return prevCountdown - 1;
+              });
+            }, 1000);
+          })
+          .catch((error) => {
+            console.error("Error creating room", error);
+            notifications.show({
+              message: error.message,
+              color: "red",
+            });
+          });
+
+        // stop the timer
+        if (timer.current) {
+          clearInterval(timer.current);
+        }
+      } catch (error: any) {
+        console.error("Error creating room", error);
+        notifications.show({
+          message: error.message || "Failed to create room.",
+          color: "red",
+        });
       }
     }
 
@@ -161,8 +244,8 @@ export default function CreateSessionPage() {
       setActive(2);
 
       // stop the timer
-      if (timer) {
-        clearInterval(timer);
+      if (timer.current) {
+        clearInterval(timer.current);
       }
     }
 
@@ -170,6 +253,9 @@ export default function CreateSessionPage() {
     socket.on("finding-match", onWaitingForMatch);
     socket.on("found-match", onFoundMatch);
     socket.on("no-match", onNoMatch);
+    socket.on("connect_error", (error) => {
+      console.error("Connection error:", error.message);
+    });
 
     return () => {
       // clear up socket
@@ -193,15 +279,16 @@ export default function CreateSessionPage() {
     }
 
     const query = {
-      categories: selectedCategories.map((c) => c.toUpperCase()),
+      categoriesId: selectedCategoriesId.map(Number),
       difficulties: selectedDifficulties.map((d) => d.toUpperCase()),
-      email: user.email,
-      displayName: user.displayName,
+      userId: user._id,
     };
 
     // fire a socket event
     socket.emit("create-match", query);
     console.log("searching for a match");
+
+    setStatus(Status.WAITING_FOR_REPLY);
   }
 
   function goToStart() {
@@ -210,8 +297,8 @@ export default function CreateSessionPage() {
 
     // reset timer
     setTimeElapsed(0);
-    if (timer) {
-      clearInterval(timer);
+    if (timer.current) {
+      clearInterval(timer.current);
     }
 
     // setSelectedCategories([]);
@@ -230,8 +317,14 @@ export default function CreateSessionPage() {
     search();
   }
 
-  function goToRoom() {
-    // stub
+  function goToRoom(question, roomId, otherUserId) {
+    navigate(`/session/${roomId}`, {
+      state: {
+        questionReceived: question,
+        roomIdReceived: roomId,
+        otherUserIdReceived: otherUserId,
+      },
+    });
   }
 
   const CREATE_COMPONENT = (
@@ -251,8 +344,8 @@ export default function CreateSessionPage() {
             label="Pick one or more categories to search for"
             description=""
             withAsterisk
-            value={selectedCategories}
-            onChange={(value) => setSelectedCategories(value)}
+            value={selectedCategoriesId}
+            onChange={(value) => setSelectedCategoriesId(value)}
           >
             <Stack mt="xs">
               {/* <Checkbox value="react" label="React" />
@@ -260,30 +353,34 @@ export default function CreateSessionPage() {
                 <Checkbox value="ng" label="Angular" />
                 <Checkbox value="vue" label="Vue" /> */}
               {categories.map((category, index) => (
-                <Checkbox value={category} label={category} key={index} />
+                <Checkbox
+                  value={category.value}
+                  label={category.label}
+                  key={index}
+                />
               ))}
             </Stack>
           </Checkbox.Group>
           <Divider />
           <Checkbox
-            checked={selectedCategories.length === categories.length}
+            checked={selectedCategoriesId.length === categories.length}
             indeterminate={
-              selectedCategories.length !== categories.length &&
-              selectedCategories.length > 0
+              selectedCategoriesId.length !== categories.length &&
+              selectedCategoriesId.length > 0
             }
             label={
-              selectedCategories.length > 0
-                ? `${selectedCategories.length} selected`
+              selectedCategoriesId.length > 0
+                ? `${selectedCategoriesId.length} selected`
                 : "Select all"
             }
             onChange={() => {
               // if indeterminate, select all
               // if all selected, deselect all
               // if none selected, select all
-              if (selectedCategories.length === categories.length) {
-                setSelectedCategories([]);
+              if (selectedCategoriesId.length === categories.length) {
+                setSelectedCategoriesId([]);
               } else {
-                setSelectedCategories(categories);
+                setSelectedCategoriesId(categories.map((v) => v.value));
               }
             }}
           />
@@ -339,11 +436,14 @@ export default function CreateSessionPage() {
       </SimpleGrid>
       <Center>
         <Button
+          mt={"2rem"}
           // component={Link}
           // to="/session/search"
           disabled={!canSearch}
           style={{ pointerEvents: !canSearch ? "none" : "unset" }}
           onClick={() => search()}
+          loading={status === Status.WAITING_FOR_REPLY}
+          variant="filled"
         >
           Begin search
         </Button>
@@ -393,8 +493,10 @@ export default function CreateSessionPage() {
                 </ThemeIcon>
               }
             >
-              {selectedCategories.map((categories, index) => (
-                <List.Item key={index}>{categories}</List.Item>
+              {selectedCategoriesId.map((categoryId, index) => (
+                <List.Item key={index}>
+                  {categories.find((c) => c.value === categoryId).label}
+                </List.Item>
               ))}
             </List>
           </Stack>
@@ -424,7 +526,9 @@ export default function CreateSessionPage() {
           </Stack>
         </SimpleGrid>
         <Center>
-          <Button onClick={() => changeCriteria()}>Change criteria</Button>
+          <Button onClick={() => changeCriteria()} variant="filled">
+            Change criteria
+          </Button>
         </Center>
       </Stack>
     </>
@@ -460,6 +564,7 @@ export default function CreateSessionPage() {
                 onClick={() => {
                   continueSearch();
                 }}
+                variant="filled"
               >
                 {" "}
                 Continue searching{" "}
@@ -484,18 +589,18 @@ export default function CreateSessionPage() {
               Found a match for you!
             </Text>
             <Text style={{ textAlign: "center" }}>
-              You'll be redirected to the room shortly.
+              You'll be redirected to the room in {redirectCountdown} seconds...
             </Text>
-            <Center>
+            {/* <Center>
               <Button
-                onClick={() => {
-                  goToRoom();
-                }}
+                // onClick={() => {
+                //   goToRoom();
+                // }}
               >
                 {" "}
                 Go to room{" "}
               </Button>
-            </Center>
+            </Center> */}
           </Stack>
         </AlertBox>
       </Stack>

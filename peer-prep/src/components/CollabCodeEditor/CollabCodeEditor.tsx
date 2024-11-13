@@ -69,7 +69,10 @@ export default function CodeEditor({
       templateCode: defaultValue,
       userId: userId,
     };
-
+    // try to refresh first
+    // actually we shouldn't even be getting an error here!
+    // this code editor is loaded after /regen is (potentially) called due to
+    // the normal non ws calls
     const provider = new WebsocketProvider(endpoint, room, doc, {
       params: params,
     });

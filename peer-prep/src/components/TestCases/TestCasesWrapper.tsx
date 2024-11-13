@@ -281,6 +281,7 @@ const TestCasesWrapper = forwardRef(
           channelId,
           firstUserId: userId,
           secondUserId: otherUserId,
+          categoriesId: question.categoriesId,
         }),
         headers: {
           "Content-Type": "application/json",

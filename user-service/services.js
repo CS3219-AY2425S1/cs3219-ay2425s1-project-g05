@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import mongoose, { connect } from "mongoose";
 
-const TOKEN_EXPIRY = "30s"
+const TOKEN_EXPIRY = "1d"
 
 export async function connectToDB() {
   let mongoDBUri = process.env.MONGO_PROD_URI;

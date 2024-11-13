@@ -1,4 +1,4 @@
-import { redisClient } from "./server.js";
+import { redisClient } from "../server.js";
 
 // Function to print Redis memory contents
 async function printRedisMemory() {
@@ -37,4 +37,15 @@ async function printRedisMemory() {
     console.error("Error printing Redis memory:", error);
   }
 }
-export default printRedisMemory;
+
+// function to set channel data in redis
+const setChannelData = async (key, data) => {
+  const channelData = await redisClient.hGetAll(`${key}`);
+  if (channelData) {
+    await redisClient.hSet(`${key}`, {
+      ...channelData,
+      ...data,
+    });
+  }
+};
+export { printRedisMemory, setChannelData };

@@ -1,5 +1,9 @@
 import express from "express";
-import { executeTest, startSession, subscribeToChannel } from "./controller.js";
+import {
+  executeTest,
+  startSession,
+  subscribeToChannel,
+} from "../controller/controller.js";
 const router = express.Router();
 
 // POST route to initiate a session

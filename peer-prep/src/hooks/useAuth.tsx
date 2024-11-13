@@ -23,6 +23,7 @@ export interface AuthContextType {
   register: (data: any) => void;
   authStatus: AUTH_STATUS;
   refresh: () => Promise<boolean>;
+  refreshForWs: () => Promise<void>;
 }
 
 const DEFAULT_TEMP_USER: User = {
@@ -42,6 +43,7 @@ const DEFAULT: AuthContextType = {
   register: () => {},
   authStatus: AUTH_STATUS.LOADING,
   refresh: () => Promise.resolve(false),
+  refreshForWs: () => Promise.resolve(),
 };
 const AuthContext = createContext<AuthContextType>(DEFAULT);
 
@@ -153,6 +155,29 @@ export const AuthProvider = ({
     //   });
   };
 
+  // also handle showing notifications
+  const refreshForWs = async () => {
+    const canRefresh = await refresh();
+    console.log(`LOG: canRefresh: ${canRefresh} for websocket connection`);
+    if (!canRefresh) {
+      // failed to refresh,
+      // show notification,
+      // redirect to home
+      notifications.show({
+        message: "Login expired or not logged in. Please log in again!",
+        title: "Error",
+        color: "red",
+      });
+      setUser(null);
+      navigate("/login");
+
+      return;
+    } else {
+      // don't say anything
+      return;
+    }
+  };
+
   const register = async (data: {
     email: string;
     password: string;
@@ -235,6 +260,7 @@ export const AuthProvider = ({
       register,
       authStatus,
       refresh,
+      refreshForWs,
     }),
     [user, authStatus]
   );

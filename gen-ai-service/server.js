@@ -17,7 +17,7 @@ app.use(loggingMiddleware);
 // Test Route for Health Checks
 app.get('/healthz', (request, response) => {
   response.status(200).json({
-    message: 'Connected to the /healthz route of the ai-chat-service',
+    message: 'Connected to the /healthz route of the gen-ai-service',
   });
 });
 
@@ -27,43 +27,41 @@ const SESSION_TIMEOUT_MS = 60 * 60 * 1000;
 // In-memory store for chat sessions. 
 const userSessions = new Map();
 
-// Function to retrieve the chat session for a given API key and room ID
-const retrieveChatSession = (apiKey, roomId) => {
-  let userChatSessions = userSessions.get(apiKey);
-  console.log('User Chat Sessions:', userChatSessions);
-  let chatSession;
-
-  // Check if the user has any existing sessions
-  if (userChatSessions) {
-    // Check if a session exists for the given room (current ongoing session)
-    if (roomId && userChatSessions.has(roomId)) {
-      chatSession = userChatSessions.get(roomId);
-    } else {
-      // Create a new session if not found
-      chatSession = createNewChatSession(apiKey);
-      userChatSessions.set(roomId || 'default', chatSession);
-    }
-  } else {
-    // Create a new session map for this user (API key)
-    userChatSessions = new Map();
-    chatSession = createNewChatSession(apiKey);
-    userChatSessions.set(roomId || 'default', chatSession);
-    userSessions.set(apiKey, userChatSessions);
-  }
-  return chatSession;
-}
-
-// Function to create a new chat session using the provided API key
-function createNewChatSession(apiKey) {
+// Function to create a new chat session for a user
+function createNewChatSession(apiKey, userId, roomId) {
   const genAIClient = new GoogleGenerativeAI(apiKey);
   const model = genAIClient.getGenerativeModel({ model: 'gemini-pro' });
+  
   const chatSession = model.startChat({
     history: [], // Start with an empty history for each new session
     generationConfig: {
       maxOutputTokens: 500,
     },
   });
-  return chatSession;
+
+  console.log('Chat session created successfully:', chatSession);
+
+  // Store the chat session in the userSessions map
+  if (userSessions.has(userId)) {
+    userSessions.get(userId).set(roomId, chatSession);
+  } else {
+    const userChatSessions = new Map();
+    userChatSessions.set(roomId, chatSession);
+    userSessions.set(userId, userChatSessions);
+  }
+}
+
+// Function to retrieve the chat session for a given user and room
+const retrieveChatSession = (userId, roomId) => {
+  const userChatSessions = userSessions.get(userId);
+
+  // Check if the user has any existing sessions
+  if (!userChatSessions || !userChatSessions.has(roomId)) {
+    // Throw an error indicating that the API key is needed to create a new session
+    throw new Error('API_KEY_REQUIRED');
+  }
+
+  return userChatSessions.get(roomId);
 }
 
 // Periodically clean up inactive sessions
@@ -77,23 +75,122 @@ setInterval(() => {
 }, SESSION_TIMEOUT_MS);
 
 
-// TODO: Create a new endpoint to take in user's api key, and create a new chat session for them
+// Endpoint to check if active chat session exists
+app.post('/api/gen-ai-service/check-active-session', async (req, res) => {
+  const { userId, roomId } = req.body;
 
-// Chat endpoint
-app.post('/api/ai-chat-service/chat', async (req, res) => {
-  const { message, roomId, apiKey } = req.body;
-
-  if (!message || !apiKey) {
+  if (!userId || !roomId) {
     return res
       .status(400)
-      .json({ statusCode: 400, message: 'Message and API Key is required' });
+      .json({ statusCode: 400, message: 'User ID and Room ID are required' });
+  }
+
+  const userChatSessions = userSessions.get(userId);
+  const hasActiveSession = userChatSessions && userChatSessions.has(roomId);
+
+  res.status(200).json({
+    statusCode: 200,
+    message: 'Active session check successful',
+    data: { hasActiveSession },
+  });
+});
+
+
+// Create chat session endpoint
+app.post('/api/gen-ai-service/create-session', async (req, res) => {
+  console.log('creating sessionnn')
+
+  const { userId, roomId, apiKey } = req.body;
+  console.log('User ID:', userId);
+  console.log('Room ID:', roomId);
+  console.log('API Key:', apiKey);
+
+  if (!apiKey) {
+    return res
+      .status(400)
+      .json({ statusCode: 400, message: 'API Key is required' });
+  }
+
+  if (!userId || !roomId) {
+    return res
+      .status(400)
+      .json({ statusCode: 400, message: 'User ID and Room ID is required' });
+  }
+
+  try {
+    createNewChatSession(apiKey, userId, roomId);
+    
+    res.status(200).json({
+      statusCode: 200,
+      message: 'Chat session created successfully',
+      data: { userId, roomId },
+    });
+  } catch (error) {
+    console.error("Error creating chat session:", error);
+
+    let statusCode = 500; 
+    let message = 'An error occurred while creating the chat session';
+
+    if (error.response) {
+      // If the error has a response property, it indicates an HTTP error
+      statusCode = error.response.status;
+
+      switch (statusCode) {
+        case 400:
+          if (error.response.data && error.response.data.error === 'INVALID_ARGUMENT') {
+            message = 'Bad Request: The request body is malformed. Please check your input parameters.';
+          } else if (error.response.data && error.response.data.error === 'FAILED_PRECONDITION') {
+            message = 'Bad Request: The free tier is not available in your country. Please enable billing on your project.';
+          }
+          break;
+        case 403:
+          message = 'Forbidden: Your API key does not have the required permissions. Please check your API key.';
+          break;
+        case 404:
+          message = 'Not Found: The requested resource was not found. Please verify your request parameters.';
+          break;
+        case 429:
+          message = 'Too Many Requests: You have exceeded the rate limit. Please slow down your requests.';
+          break;
+        case 500:
+          message = 'Internal Server Error: An unexpected error occurred on Google\'s side. Please try again later.';
+          break;
+        case 503:
+          message = 'Service Unavailable: The service is temporarily overloaded or down. Please try again later.';
+          break;
+        case 504:
+          message = 'Deadline Exceeded: The service was unable to finish processing within the deadline. Please try again with a larger timeout.';
+          break;
+        default:
+          message = error.message || message; // Fallback to the default message
+      }
+    }
+
+    res.status(statusCode).json({
+      statusCode,
+      message,
+    });
+  }
+});
+
+// Chat endpoint
+app.post('/api/gen-ai-service/chat', async (req, res) => {
+  const { message, userId, roomId } = req.body;
+
+  if (!message || !userId || !roomId) {
+    return res
+      .status(400)
+      .json({ statusCode: 400, message: 'Message, User ID and Room ID are required' });
   }
 
   console.log('Message:', message);
 
-  let chatSession = retrieveChatSession(apiKey, roomId);
-
   try {
+    // Attempt to retrieve the chat session
+    let chatSession = retrieveChatSession(userId, roomId);
+
+    console.log('Chat session retrieved successfully:', chatSession);
+
     // Send the user message to Gemini and get the response
     const result = await chatSession.sendMessage(message);
     const response = await result.response;
@@ -108,20 +205,27 @@ app.post('/api/ai-chat-service/chat', async (req, res) => {
     });
   } catch (error) {
     console.error('Error communicating with Gemini API:', error);
-    res.status(500).json({
-      statusCode: 500,
-      message: 'Error communicating with Gemini API',
-      data: null,
-    });
+    if (error.message === 'API_KEY_REQUIRED') {
+      return res.status(401).json({
+        statusCode: 401,
+        message: 'API Key is required to create a new chat session.',
+      });
+    } else {
+      res.status(500).json({
+        statusCode: 500,
+        message: 'Error communicating with Gemini API, please try again later.',
+        data: null,
+      });
+    }
   }
 });
 
 // Analyse failed test cases endpoint
-app.post('/api/ai-chat-service/analyse-failed-test-cases', async (req, res) => {
+app.post('/api/gen-ai-service/analyse-failed-test-cases', async (req, res) => {
   
-  const { testProgramCode, expectedOutput, actualOutput, solutionCode, question, roomId, apiKey } = req.body;
+  const { testProgramCode, expectedOutput, actualOutput, solutionCode, question, userId, roomId } = req.body;
 
-  if (!testProgramCode || !expectedOutput || !actualOutput || !solutionCode || !question || !apiKey) {
+  if (!testProgramCode || !expectedOutput || !actualOutput || !solutionCode || !question || !userId || !roomId) {
     return res
       .status(400)
       .json({ statusCode: 400, message: 'Missing params for analysing failed test cases' });
@@ -134,9 +238,9 @@ app.post('/api/ai-chat-service/analyse-failed-test-cases', async (req, res) => {
   + '- Suggest improvements or corrections to fix the failing test cases. \n'
   + 'Please provide a detailed analysis and step-by-step suggestions on how to fix the errors, but keep it concise while still being clear. Thank you!';
 
-  let chatSession = retrieveChatSession(apiKey, roomId);
-  
   try {
+    let chatSession = retrieveChatSession(userId, roomId);
+
     // Send the user message to Gemini and get the response
     const result = await chatSession.sendMessage(prompt);
     const response = await result.response;
@@ -149,20 +253,27 @@ app.post('/api/ai-chat-service/analyse-failed-test-cases', async (req, res) => {
     });
   } catch (error) {
     console.error('Error communicating with Gemini API:', error);
-    res.status(500).json({
-      statusCode: 500,
-      message: 'Error communicating with Gemini API',
-      data: null,
-    });
+    if (error.message === 'API_KEY_REQUIRED') {
+      return res.status(401).json({
+        statusCode: 401,
+        message: 'API Key is required to create a new chat session.',
+      });
+    } else {
+      res.status(500).json({
+        statusCode: 500,
+        message: 'Error communicating with Gemini API, please try again later.',
+        data: null,
+      });
+    }
   }
 })
 
 // Analyse error logs endpoint
-app.post('/api/ai-chat-service/analyse-error-logs', async (req, res) => {
+app.post('/api/gen-ai-service/analyse-error-logs', async (req, res) => {
 
-  const { errorLogs, solutionCode, roomId, apiKey } = req.body;
+  const { errorLogs, solutionCode, userId, roomId } = req.body;
 
-  if (!errorLogs || !solutionCode || !apiKey) {
+  if (!errorLogs || !solutionCode || !userId || !roomId) {
     return res
       .status(400)
       .json({ statusCode: 400, message: 'Logs or solution code are required' });
@@ -173,9 +284,10 @@ app.post('/api/ai-chat-service/analyse-error-logs', async (req, res) => {
   + 'Please help me understand the errors by analyzing the logs provided. Focus only on identifying what might be causing these errors and provide specific ' 
   + 'steps or advice on how to fix them. Do not give me a solution to the entire problem, and avoid any hints or explanations related to solving the overall task.';
 
-  let chatSession = retrieveChatSession(apiKey, roomId);
 
   try {
+    let chatSession = retrieveChatSession(userId, roomId);
+
     // Send the user message to Gemini and get the response
     const result = await chatSession.sendMessage(prompt);
     const response = await result.response;
@@ -190,11 +302,18 @@ app.post('/api/ai-chat-service/analyse-error-logs', async (req, res) => {
     });
   } catch (error) {
     console.error('Error communicating with Gemini API:', error);
-    res.status(500).json({
-      statusCode: 500,
-      message: 'Error communicating with Gemini API',
-      data: null,
-    });
+    if (error.message === 'API_KEY_REQUIRED') {
+      return res.status(401).json({
+        statusCode: 401,
+        message: 'API Key is required to create a new chat session.',
+      });
+    } else {
+      res.status(500).json({
+        statusCode: 500,
+        message: 'Error communicating with Gemini API, please try again later.',
+        data: null,
+      });
+    }
   }
 });
 

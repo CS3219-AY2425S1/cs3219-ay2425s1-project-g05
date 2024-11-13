@@ -12,6 +12,7 @@ import { parseInt } from 'lib0/number';
 import { router } from './src/router/router.js';
 
 import pkg from 'ws';
+import { verifyAccessToken } from './src/middlewares/access-control.js';
 const { Server } = pkg;
 
 // Set up env variables
@@ -53,6 +54,40 @@ websocketServer.on('connection', async (conn, sock) => {
 
 // Upgrade requests to Websockets
 httpServer.on('upgrade', (req, sock, head) => {
+  const headers = req.rawHeaders;
+  let cookie = '';
+
+  for (let i = 0; i < headers.length; i++) {
+    if (headers[i] === 'Cookie' || headers[i] === 'cookie') {
+      cookie = headers[i + 1];
+    }
+  }
+
+  cookie ??= '';
+
+  if (cookie === '') {
+    console.log('Missing Access Token');
+    websocketServer.emit('invalid-token', sock, req);
+    sock.destroy();
+  }
+
+  cookie = cookie
+    .split('; ')
+    .find((row) => row.startsWith('accessToken='))
+    ?.split('=')[1];
+
+  if (!cookie) {
+    console.log('Invalid Access Token');
+    websocketServer.emit('invalid-token', sock, req);
+    sock.destroy();
+  }
+
+  if (!verifyAccessToken(cookie)) {
+    console.log('Invalid Access Token');
+    websocketServer.emit('invalid-token', sock, req);
+    sock.destroy();
+  }
+
   websocketServer.handleUpgrade(req, sock, head, (soc) => {
     websocketServer.emit('connection', soc, req);
   });

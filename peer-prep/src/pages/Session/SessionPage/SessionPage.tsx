@@ -9,6 +9,9 @@ import {
   Container,
   Flex,
   Group,
+  Input,
+  Loader,
+  Modal,
   Paper,
   PasswordInput,
   Rating,
@@ -39,6 +42,7 @@ import { UserResponseData } from "../../../types/user";
 
 import { TestCaseResult as TestCaseResultDb } from "../../../types/attempts";
 import AlertBox from "../../../components/Alert/AlertBox";
+import { AIProvider, useAi } from "../../../hooks/useAi";
 
 type QuestionCategory =
   | "ALGORITHMS"
@@ -410,50 +414,141 @@ export default function SessionPage() {
     });
   };
 
-  // TODO: Open modal when user uses gen ai related functions. 
-  // To create an endpoint in backend to take in the api key and use it to call the google ai api
+  const { isApiKeyModalVisible, setApiKeyModalVisible, hasApiKey, setHasApiKey } = useAi();
+
+  const apiKeyInput = useRef<HTMLInputElement>(null);
+  const [sendingApiKey, setSendingApiKey] = useState(false);
+
+  // Check if user has already sent their API key
+  useEffect(() => {
+    fetchData<ServerResponse<{ hasActiveSession: boolean }>>(
+      `/gen-ai-service/check-active-session`,
+      SERVICE.AI,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user._id,
+          roomId: roomId,
+        }),
+      }
+    ).then((response) => {
+      console.log("LOG: hasActiveSession = ", response.data.hasActiveSession);
+      if (response.data.hasActiveSession) {
+        setHasApiKey(true);
+      }
+    }).catch((error: any) => {
+      console.error("Error checking active session", error);
+    });
+  }, []);
+
   const openSendApiKeyModal = () => {
     modals.open({
       children: (
         <Stack style={{ padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
-            <Title order={3} style={{ marginBottom: '10px' }}>
-                Enter Your Google AI API Key
-            </Title>
-            <Text size="sm" color="dimmed">
-                Before we can continue, please enter your Google AI API key. You can retrieve it from the 
-                <Anchor href="https://aistudio.google.com/app/apikey" target="_blank" underline="always" style={{ marginLeft: '5px' }}>
-                    Google AI Studio
-                </Anchor>.
-            </Text>
-            <PasswordInput
-                placeholder="API Key"
-                onChange={(event) => setChannelId(event.currentTarget.value)}
-                style={{ marginTop: '10px' }}
-            />
+          <Title order={3} style={{ marginBottom: '10px' }}>
+            Enter Your Google AI API Key
+          </Title>
+          <Text size="sm" color="dimmed">
+            Before we can continue, please enter your Google AI API key. You can retrieve it from the 
+            <Anchor href="https://aistudio.google.com/app/apikey" target="_blank" underline="always" style={{ marginLeft: '5px' }}>
+              Google AI Studio
+            </Anchor>.
+          </Text>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault(); 
+              handleSendApiKey(); 
+            }}
+          >
+          <PasswordInput
+              label="API Key"
+              placeholder="Your Google AI API Key"
+              mt="md"
+              required
+              size="md"
+              ref={apiKeyInput}
+          />
+          {sendingApiKey ? (
+            <Center>
+              <Loader />
+            </Center>
+          ) : (
             <Button
-                variant="gradient"
-                gradient={{ from: 'blue', to: 'cyan' }}
-                onClick={() => {
-                    modals.closeAll();
-                }}
-                style={{ marginTop: '15px' }}
+              variant="gradient"
+              gradient={{ from: 'blue', to: 'cyan' }}
+              type="submit"
+              style={{ marginTop: '15px' }}
             >
-                Send API Key
+              Send API Key
             </Button>
+          )}
+          </form>
         </Stack>
       ),
     });
   }
 
-  useEffect(() => {
-    // Set timeout to 10 seconds, after which the API key modal will be shown
-    // THIS IS A TEMPORARY SOLUTION
-    const timer = setTimeout(() => {
-      openSendApiKeyModal();
-    }, 10000);
+  function handleSendApiKey() {
+    setSendingApiKey(true);
 
-    return () => clearTimeout(timer);
-  }, []); 
+    // Send the API key to the AI service
+    try { 
+      // If the response is successful, close the modal and set the hasApiKey to true
+      const apiKey = apiKeyInput.current.value;
+      console.log('api key!! = ', apiKey);
+
+      fetchData<ServerResponse<{
+        userId: string;
+        roomId: string;
+      }>>(
+        `/gen-ai-service/create-session`,
+        SERVICE.AI,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: user._id,
+            roomId: roomId,
+            apiKey: apiKey,
+          }),
+        }
+      ).then((response) => {
+        console.log("API Key sent successfully", response);
+        setSendingApiKey(false);
+
+        setApiKeyModalVisible(false);
+        setHasApiKey(true);
+
+        notifications.show({
+          title: "API key sent successfully",
+          message: "You can now use the AI features.",
+          color: "green",
+        });
+      });
+    } catch (error: any) {
+      // If there is an error, show a notification with the error message and keep the modal open for the user to try again
+      console.error("Error sending API key", error);
+      notifications.show({
+        title: "Error sending API key, please try again",
+        message: error.message,
+        color: "red",
+      });
+      setSendingApiKey(false);
+    }
+  }
+
+  useEffect(() => {
+    if (isApiKeyModalVisible) {
+      openSendApiKeyModal();
+    } else {
+      modals.closeAll();
+    }
+  }, [isApiKeyModalVisible]); 
 
   
   const handleEndSession = async () => {

@@ -1,32 +1,45 @@
-import ForbiddenError from '../errors/ForbiddenError.js';
+import { config } from 'dotenv';
 import jwt from 'jsonwebtoken';
+
+config();
 
 function verifyAccessToken(token) {
   return jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
     if (err) {
       return null;
     }
-
     return user;
   });
 }
 
-const checkAdmin = (request, response, next) => {
-  if (!request.cookies.accessToken) {
-    throw new ForbiddenError('Access Token not found');
+function verifyAuthMiddleware(req, res, next) {
+  const { accessToken } = req.cookies;
+
+  // if (!cookies) {
+  //   return next(new Error('Unauthorized: No cookies found'));
+  // }
+
+  // const accessToken = cookies
+  //   .split('; ')
+  //   .find((row) => row.startsWith('accessToken='))
+  //   ?.split('=')[1];
+
+  if (!accessToken) {
+    return res
+      .status(403)
+      .json({ statusCode: 403, message: 'Missing Access Token' });
   }
 
-  const jwtUser = verifyAccessToken();
-
-  if (!jwtUser || !jwtUser.isAdmin) {
-    throw new ForbiddenError('Access Token Verification failed');
+  const user = verifyAccessToken(accessToken);
+  if (!user) {
+    return res
+      .status(403)
+      .json({ statusCode: 403, message: 'Missing Access Token' });
   }
 
-  if (jwtUser.isAdmin) {
-    return next();
-  }
+  req.user = { ...user }
 
-  throw new ForbiddenError('You are not authorized to perform this action');
-};
+  return next();
+}
 
-export default checkAdmin;
+export { verifyAccessToken, verifyAuthMiddleware };

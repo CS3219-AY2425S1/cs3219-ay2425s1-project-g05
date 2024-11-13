@@ -30,6 +30,7 @@ import ReadQuestionPage from "./pages/Questions/ReadQuestionPage/ReadQuestionPag
 import SessionPage from "./pages/Session/SessionPage/SessionPage.tsx";
 
 import "@fontsource/inter";
+import { AIProvider } from "./hooks/useAi.tsx";
 
 const router = createBrowserRouter([
   {
@@ -157,7 +158,9 @@ createRoot(document.getElementById("root")!).render(
   // <StrictMode>
   <MantineProvider theme={theme}>
     <Notifications />
-    <RouterProvider router={router}></RouterProvider>
+    <AIProvider>
+      <RouterProvider router={router}></RouterProvider>
+    </AIProvider>
   </MantineProvider>
 
   // </StrictMode>

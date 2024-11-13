@@ -34,7 +34,7 @@ const AvatarWithDetailsButton = forwardRef<HTMLButtonElement, UserButtonProps>(
           </Text>
         </div>
 
-        {icon || <IconChevronRight size="1rem" />}
+        {icon === null ? <></> : <IconChevronRight size="1rem" />}
       </Group>
     </UnstyledButton>
   )

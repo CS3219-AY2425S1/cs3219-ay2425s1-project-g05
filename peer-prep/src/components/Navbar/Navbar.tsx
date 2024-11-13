@@ -16,6 +16,7 @@ import {
   Flex,
   ActionIcon,
   useMantineColorScheme,
+  Space,
 } from "@mantine/core";
 // import { MantineLogo } from "@mantinex/mantine-logo";
 import { useDisclosure } from "@mantine/hooks";
@@ -45,65 +46,11 @@ import { AUTH_STATUS, useAuth } from "../../hooks/useAuth";
 import AvatarWithDetailsButton from "../AvatarIcon/AvatarWithDetailsButton";
 import { useId } from "react";
 
-const mockdata = [
-  {
-    icon: IconCode,
-    title: "Open source",
-    description: "This Pokémon’s cry is very loud and distracting",
-  },
-  {
-    icon: IconCoin,
-    title: "Free for everyone",
-    description: "The fluid of Smeargle’s tail secretions changes",
-  },
-  {
-    icon: IconBook,
-    title: "Documentation",
-    description: "Yanma is capable of seeing 360 degrees without",
-  },
-  {
-    icon: IconFingerprint,
-    title: "Security",
-    description: "The shell’s rounded shape and the grooves on its.",
-  },
-  {
-    icon: IconChartPie3,
-    title: "Analytics",
-    description: "This Pokémon uses its flying ability to quickly chase",
-  },
-  {
-    icon: IconNotification,
-    title: "Notifications",
-    description: "Combusken battles with the intensely hot flames it spews",
-  },
-];
-
 export function Navbar() {
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
     useDisclosure(false);
   const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false);
   const theme = useMantineTheme();
-
-  const links = mockdata.map((item) => (
-    <UnstyledButton className={classes.subLink} key={item.title}>
-      <Group wrap="nowrap" align="flex-start">
-        <ThemeIcon size={34} variant="default" radius="md">
-          <item.icon
-            style={{ width: rem(22), height: rem(22) }}
-            color={theme.colors.blue[6]}
-          />
-        </ThemeIcon>
-        <div>
-          <Text size="sm" fw={500}>
-            {item.title}
-          </Text>
-          <Text size="xs" c="dimmed">
-            {item.description}
-          </Text>
-        </div>
-      </Group>
-    </UnstyledButton>
-  ));
 
   const { user, logout, authStatus } = useAuth();
 
@@ -235,68 +182,8 @@ export function Navbar() {
                       </Link>
                     </Menu.Item>
 
-                    {/* <Menu.Item
-                      leftSection={
-                        <IconMessageCircle
-                          style={{ width: rem(14), height: rem(14) }}
-                        />
-                      }
-                    >
-                      Messages
-                    </Menu.Item> */}
-                    {/* <Menu.Item
-                  leftSection={
-                    <IconPhoto style={{ width: rem(14), height: rem(14) }} />
-                  }
-                >
-                  Gallery
-                </Menu.Item> */}
-
-                    {/* <Menu.Item
-                      leftSection={
-                        <IconSearch
-                          style={{ width: rem(14), height: rem(14) }}
-                        />
-                      }
-                      rightSection={
-                        <Text size="xs" c="dimmed">
-                          ⌘K
-                        </Text>
-                      }
-                    >
-                      Search
-                    </Menu.Item> */}
-
-                    {/* <Menu.Divider />
-
-                    <Menu.Item
-                      leftSection={
-                        <IconSettings
-                          style={{ width: rem(14), height: rem(14) }}
-                        />
-                      }
-                    >
-                      Settings
-                    </Menu.Item> */}
                     <Menu.Divider />
-                    {/* <Menu.Label>Danger zone</Menu.Label>
-                <Menu.Item
-                  leftSection={
-                    <IconArrowsLeftRight
-                      style={{ width: rem(14), height: rem(14) }}
-                    />
-                  }
-                >
-                  Transfer my data
-                </Menu.Item> */}
-                    {/* <Menu.Item
-                  color="red"
-                  leftSection={
-                    <IconTrash style={{ width: rem(14), height: rem(14) }} />
-                  }
-                >
-                  Delete my account
-                </Menu.Item> */}
+
                     <Menu.Item
                       leftSection={
                         <IconRefresh
@@ -373,37 +260,116 @@ export function Navbar() {
         <ScrollArea h={`calc(100vh - ${rem(80)})`} mx="-md">
           <Divider my="sm" />
 
-          <a href="#" className={classes.link}>
+          <Link
+            to={authStatus === AUTH_STATUS.LOGGED_IN ? "/dashboard" : "/"}
+            className={classes.link}
+            onClick={closeDrawer}
+          >
             Home
-          </a>
-          {/* <UnstyledButton className={classes.link} onClick={toggleLinks}>
-            <Center inline>
-              <Box component="span" mr={5}>
-                Features
-              </Box>
-              <IconChevronDown
-                style={{ width: rem(16), height: rem(16) }}
-                color={theme.colors.blue[6]}
-              />
-            </Center>
-          </UnstyledButton> */}
-          <Collapse in={linksOpened}>{links}</Collapse>
-          <Link to="/learn" className={classes.link}>
-            Learn
           </Link>
+          {user ? (
+            user.isAdmin ? (
+              <Link
+                to="/questions"
+                className={classes.link}
+                onClick={closeDrawer}
+              >
+                Questions
+              </Link>
+            ) : null
+          ) : null}
 
-          <a href="#" className={classes.link}>
-            Academy
-          </a>
+          <Divider my="sm" />
+          {user && (
+            <>
+              <Link
+                className={classes.link}
+                to="/dashboard"
+                onClick={closeDrawer}
+              >
+                Dashboard
+              </Link>
+              <Link className={classes.link} to="#" onClick={closeDrawer}>
+                Change password
+              </Link>
+            </>
+          )}
+          <Divider my="sm" />
+          <Box className={classes.mobileNavbarFooter}>
+            {user ? (
+              <>
+                <AvatarWithDetailsButton
+                  image=""
+                  name={user.displayName}
+                  email={user.email}
+                  color="initials"
+                  icon={null}
+                >
+                  {user.displayName}
+                </AvatarWithDetailsButton>
+                <Space flex={1} />
+                <ActionIcon
+                  variant="transparent"
+                  aria-label="Settings"
+                  color="grey"
+                  onClick={toggleColorScheme}
+                >
+                  {colorScheme === "dark" ? (
+                    <IconSun
+                      // style={{ width: "70%", height: "70%" }}
+                      stroke={1.5}
+                    />
+                  ) : (
+                    <IconMoon
+                      // style={{ width: "70%", height: "70%" }}
+                      stroke={1.5}
+                    />
+                  )}
+                </ActionIcon>
+                <Button
+                  color="red"
+                  leftSection={
+                    <IconLogout style={{ width: rem(14), height: rem(14) }} />
+                  }
+                  onClick={() => {
+                    closeDrawer();
+                    logout();
+                  }}
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Space flex={1} />
+                <Group>
+                  <Link to="/login">
+                    <Button variant="default" onClick={closeDrawer}>
+                      Log in
+                    </Button>
+                  </Link>
+                  <Link to="/login?register=true">
+                    <Button variant="filled" onClick={closeDrawer}>
+                      Sign up
+                    </Button>
+                  </Link>
+                </Group>
+              </>
+            )}
+          </Box>
 
           <Divider my="sm" />
 
-          <Group justify="center" grow pb="xl" px="md">
+          <Group>
+            <Space flex={1} />
+          </Group>
+
+          {/* <Group justify="center" grow pb="xl" px="md">
             <Link to="/login">
               <Button variant="default">Log in</Button>
             </Link>
             <Button>Sign up</Button>
-          </Group>
+          </Group> */}
         </ScrollArea>
       </Drawer>
     </Box>

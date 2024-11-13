@@ -31,7 +31,7 @@ import {
   Textarea,
   Tooltip,
 } from "@mantine/core";
-import { useEffect, useRef, useState } from "react";
+import { createContext, useEffect, useRef, useState } from "react";
 
 import classes from "./TextChatWidget.module.css";
 import { useAuth } from "../../../hooks/useAuth";
@@ -80,6 +80,7 @@ import { User } from "../../../types/user";
 import GeminiIcon from "../../../assets/integrations/google-gemini-icon.svg";
 import useApi, { ServerResponse, SERVICE } from "../../../hooks/useApi";
 import { CodeHighlight } from "@mantine/code-highlight";
+import { useAi } from "../../../hooks/useAi";
 
 enum ChatState {
   DISCONNECTED,
@@ -154,7 +155,7 @@ interface AiChatResponse {
 export default function TextChatWidget({ roomId, question, solutionCode }: TextChatWidgetProps) {
   const { user } = useAuth();
 
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const { setApiKeyModalVisible, hasApiKey } = useAi();
 
   const [messageState, setMessageState] = useState<MessageState>(
     MessageState.BEFORE_SEND
@@ -280,7 +281,13 @@ export default function TextChatWidget({ roomId, question, solutionCode }: TextC
     if (defaultSendTo === "person") {
       onSendMessage();
     } else if (defaultSendTo === "gemini_1.0") {
-      onSendAiMessage();
+      if (hasApiKey) {
+        console.log('user already keyed in their api key')
+        onSendAiMessage();
+      } else {
+        console.log('user has not keyed in their api key')
+        setApiKeyModalVisible(true);
+      }
     }
   };
   const onSendMessage = () => {
@@ -316,59 +323,76 @@ export default function TextChatWidget({ roomId, question, solutionCode }: TextC
 
     setMessageState(MessageState.SENDING);
 
-    try {
-      console.log('sending message to AI');
-      console.log('api key', apiKey);
-      fetchData<ServerResponse<AiChatResponse>>(
-        `/ai-chat-service/chat`,
-        SERVICE.AI,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            message: messageToSend,
-            roomId: roomId,
-            apiKey,
-          }),
-        }
-      ).then((res) => {
-        console.log("AI response", res);
+    console.log('sending message to AI');
+    fetchData<ServerResponse<AiChatResponse>>(
+      `/gen-ai-service/chat`,
+      SERVICE.AI,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: messageToSend,
+          userId: user._id,
+          roomId: roomId,
+        }),
+      }
+    ).then((res) => {
+      console.log("AI response", res);
 
-        if (res.statusCode === 200) {
-          const responseText = res.data.reply;
-          setMessageState(MessageState.SENDING);
-          // socket.emit("chat-message", {
-          //   roomId: roomId,
-          //   message: responseText,
-          //   replyToId: replyToMessage?.messageId,
-          // });
+      if (res.statusCode === 200) {
+        const responseText = res.data.reply;
+        setMessageState(MessageState.SENDING);
+        // socket.emit("chat-message", {
+        //   roomId: roomId,
+        //   message: responseText,
+        //   replyToId: replyToMessage?.messageId,
+        // });
 
+        socket.emit("chat-message", {
+          roomId: roomId,
+          message: `${messageToSend}\n--------------\n${responseText}`,
+          replyToId: replyToMessage?.messageId,
+          integration: integration,
+        });
+      } else {
+        const errorMessage = res.message || "Error chatting with AI";
+        handleIntegrationError(integration, errorMessage);
+
+        // Emit error message to the chat widget
+        // Adding a slight delay before emitting the error message
+        setTimeout(() => {
           socket.emit("chat-message", {
             roomId: roomId,
-            message: `${messageToSend}\n--------------\n${responseText}`,
+            message: `⚠️ ${errorMessage}`,
             replyToId: replyToMessage?.messageId,
             integration: integration,
           });
-        } else {
-          const errorMessage = res.message || "Error chatting with AI";
-          handleIntegrationError(integration, errorMessage);
-          
-        }
-      });
-    } catch (e) {
-      const errorMessage =
-        "Error sending message. Please check your internet connection.";
+        }, 1500);
+      }
+    }).catch((e) => {
+      console.log("Error chatting with AI", e);
+      const errorMessage = "Error chatting with AI. Please try again.";
       handleIntegrationError(integration, errorMessage);
+
+      // Adding a slight delay before emitting the error message
+      setTimeout(() => {
+        socket.emit("chat-message", {
+          roomId: roomId,
+          message: `⚠️ ${errorMessage}`,
+          replyToId: replyToMessage?.messageId,
+          integration: integration,
+        });
+      }, 1500);
 
       notifications.show({
         title: "Error chatting with AI",
         message: errorMessage,
         color: "red",
       });
-    }
-  };
+    });
+  }
 
   const handleIntegrationError = (
     integrationId: string,
@@ -524,13 +548,40 @@ export default function TextChatWidget({ roomId, question, solutionCode }: TextC
   }
 
   function handleGenerateHints() {
-    const prompt = 'Can you please help me generate hints for the following leetcode question? \n' + question;
+    const prompt = 
+    `Can you generate helpful hints for the following coding question?\n\n"${question}"\n\n` +
+    `Please provide 3-4 hints that guide the user towards solving the problem without giving away the full solution. ` +
+    `Keep the hints concise and focused on the key concepts needed to solve the problem.`;
+    setDraftMessage(prompt);
+    onBeforeSendMessage();
+  }
+
+  function handleGenerateSolution() {
+    const prompt = 
+      `I have attempted a solution for this coding question:\n\n"${question}"\n\n` +
+      `Here is my current code:\n\n"${solutionCode}"\n\n` +
+      `Can you generate a correct solution for this problem and briefly explain how it differs from my attempt? ` +
+      `Please highlight the key changes made to fix any bugs/issues in my original code, while keeping your explanation concise but informative.`;
     setDraftMessage(prompt);
     onBeforeSendMessage();
   }
 
   function handleExplainCode() {
-    const prompt = 'Can you please help me explain the following code? \n' + solutionCode;
+    const prompt = 
+      `I have written the following solution:\n\n"${solutionCode}"\n\n` +
+      `Can you explain this code step by step, focusing on what each part is doing? ` +
+      `Highlight any potential issues, bugs, or areas for improvement. ` +
+      `Keep the explanation concise but include important details to help me understand the logic behind my implementation. ` +
+      `Also, suggest any best practices or optimizations for better performance or readability, if applicable.`;
+    setDraftMessage(prompt);
+    onBeforeSendMessage();
+  }
+
+  function handleExplainQuestion() {
+    const prompt = 
+      `I am having trouble understanding the following LeetCode question:\n\n"${question}"\n\n` +
+      `Could you provide an explanation of what this question is asking for, including any hidden details, assumptions, or common pitfalls? ` +
+      `Keep the explanation concise but make sure all key details are covered to help me fully understand what is being asked.`;
     setDraftMessage(prompt);
     onBeforeSendMessage();
   }
@@ -776,7 +827,7 @@ export default function TextChatWidget({ roomId, question, solutionCode }: TextC
                     <Button
                         variant="gradient"
                         gradient={{ from: "violet", to: "blue", deg: 135 }}
-                        onClick={handleExplainCode}
+                        onClick={handleGenerateSolution}
                         loading={messageState === MessageState.SENDING}
                         style={{
                             marginLeft: "1rem",
@@ -808,7 +859,7 @@ export default function TextChatWidget({ roomId, question, solutionCode }: TextC
                     <Button
                         variant="gradient"
                         gradient={{ from: "violet", to: "blue", deg: 135 }}
-                        onClick={handleExplainCode}
+                        onClick={handleExplainQuestion}
                         loading={messageState === MessageState.SENDING}
                         style={{
                             marginLeft: "1rem",

@@ -40,6 +40,7 @@ import { CodeHighlight } from "@mantine/code-highlight";
 import "@mantine/code-highlight/styles.css";
 import { useAuth } from "../../hooks/useAuth";
 import ReactMarkdown from "react-markdown";
+import { useAi } from "../../hooks/useAi";
 
 type TestCasesWrapperProps = {
   testCases: TestCase[]; // array of test cases
@@ -341,6 +342,7 @@ export default function TestCasesWrapper({
         latestResults={latestResults}
         testCases={testCases}
         roomId={roomId}
+        userId={userId}
         question={question}
       />
       <>
@@ -527,6 +529,7 @@ export const TestCasesDisplay = ({
   isRunning,
   attemptCodeMap,
   attempt,
+  userId,
   roomId,
   question,
 }: {
@@ -537,10 +540,12 @@ export const TestCasesDisplay = ({
     [attempt: number]: { code: string; results: TestCaseResult[] };
   };
   attempt: number;
+  userId: string;
   roomId: string;
   question: string;
 }) => {
   const { fetchData } = useApi();
+  const { setApiKeyModalVisible, hasApiKey } = useAi();
 
   const { colorScheme } = useMantineColorScheme();
   const [currentTestCase, setCurrentTestCase] = useState<TestCase | null>(
@@ -612,6 +617,12 @@ export const TestCasesDisplay = ({
   }, [testCases]);
   
   const handleAnalyseClick = async () => {
+    // User must key in their API key first to use the AI service, show modal if they have not
+    if (!hasApiKey) {
+      setApiKeyModalVisible(true);
+      return;
+    }
+
     setOpened(true);
     setLoading(true);
 
@@ -620,50 +631,55 @@ export const TestCasesDisplay = ({
     setDisplayedLines([]);
     setErrorRetrieving(false);
 
-    try {
-      // Retrieve solution code and error logs to send to AI
-      const solutionCode = attemptCodeMap[attempt]?.code || '';
-      const errorLogs = getTestCaseResult(currentTestCase._id.toString(), 1)?.stderr || '';
+    // Retrieve solution code and error logs to send to AI
+    const solutionCode = attemptCodeMap[attempt]?.code || '';
+    const errorLogs = getTestCaseResult(currentTestCase._id.toString(), 1)?.stderr || '';
 
-      console.log('Solution code:', solutionCode);
-      console.log('Error logs:', errorLogs);
+    console.log('Solution code:', solutionCode);
+    console.log('Error logs:', errorLogs);
 
-      // Send the prompt to the AI for analysis
-      fetchData<ServerResponse<AiChatResponse>>(
-        `/ai-chat-service/analyse-error-logs`,
-        SERVICE.AI,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            errorLogs,
-            solutionCode,
-            roomId,
-            apiKey: import.meta.env.GEMINI_API_KEY,
-          }),
-        }
-      ).then((res) => {
-        if (res.statusCode === 200) {
-          console.log('AI Analysis:', res.data.reply);
-          setAnalysisResult(res.data.reply);
+    // Send the prompt to the AI for analysis
+    fetchData<ServerResponse<AiChatResponse>>(
+      `/gen-ai-service/analyse-error-logs`,
+      SERVICE.AI,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          errorLogs,
+          solutionCode,
+          userId,
+          roomId,
+        }),
+      }
+    ).then((res) => {
+      if (res.statusCode === 200) {
+        console.log('AI Analysis:', res.data.reply);
+        setAnalysisResult(res.data.reply);
 
-          const lines = res.data.reply.trim().split('\n');
-          displayLines(lines);
-          setAnalysisResult(res.data.reply);
-        } else {
-          console.error('Error fetching AI analysis:', res.data.reply);
-          setAnalysisResult('Failed to fetch AI analysis. Please try again.');
-          setErrorRetrieving(true);
-        }
-      });
+        const lines = res.data.reply.trim().split('\n');
+        displayLines(lines);
 
-    } catch (error) {
-      console.error('Error fetching AI analysis:', error);
-      setAnalysisResult('Failed to fetch AI analysis. Please try again.');
-      setErrorRetrieving(true);
-    } 
+        setGenerated(true);
+        setLoading(false);
+        setAnalysisResult(res.data.reply);
+      } else {
+        console.error('Error fetching AI analysis:', res.data.reply);
+        setLoading(false);
+        setAnalysisResult('Failed to fetch AI analysis. Please try again.');
+        setErrorRetrieving(true);
+      }
+    }).catch((error) => {
+      // Simulate delay before error handling
+      setTimeout(() => {
+        console.error('Error fetching AI analysis:', error);
+        setAnalysisResult('Failed to fetch AI analysis. Please try again.');
+        setErrorRetrieving(true);
+        setLoading(false);
+      }, 1500);  // 1.5 second delay before handling the error
+    });
   };
 
   // Function to display AI analysis line by line
@@ -674,11 +690,15 @@ export const TestCasesDisplay = ({
       index++;
       if (index >= lines.length) clearInterval(interval);
     }, 500);
-    setGenerated(true);
-    setLoading(false);
   };
 
   const handleFailedTestCaseAnalyseClick = async () => {
+    // User must key in their API key first to use the AI service, show modal if they have not
+    if (!hasApiKey) {
+      setApiKeyModalVisible(true);
+      return;
+    }
+
     setOpenedTestCaseAnalysis(true);
     setLoadingTestCaseAnalysis(true);
 
@@ -687,55 +707,60 @@ export const TestCasesDisplay = ({
     setDisplayedLinesTestCaseAnalysis([]);
     setErrorRetrievingTestCaseAnalysis(false);
 
-    try {
-      const testProgramCode = currentTestCase.testCode;
-      const expectedOutput = currentTestCase.expectedOutput;
-      const actualOutput = getTestCaseResult(currentTestCase._id.toString(), 1)?.stdout || '';
-      const solutionCode = attemptCodeMap[attempt]?.code || '';
+    const testProgramCode = currentTestCase.testCode;
+    const expectedOutput = currentTestCase.expectedOutput;
+    const actualOutput = getTestCaseResult(currentTestCase._id.toString(), 1)?.stdout || '';
+    const solutionCode = attemptCodeMap[attempt]?.code || '';
 
-      console.log('Test program code:', testProgramCode);
-      console.log('Expected output:', expectedOutput);
-      console.log('Actual output:', actualOutput);
-      console.log('Solution code:', solutionCode);
+    console.log('Test program code:', testProgramCode);
+    console.log('Expected output:', expectedOutput);
+    console.log('Actual output:', actualOutput);
+    console.log('Solution code:', solutionCode);
 
-      // Make the API request to fetch failed test case analysis
-      fetchData<ServerResponse<AiChatResponse>>(
-        `/ai-chat-service/analyse-failed-test-cases`,
-        SERVICE.AI,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            testProgramCode,
-            expectedOutput,
-            actualOutput,
-            solutionCode,
-            question,
-            roomId,
-            apiKey: import.meta.env.GEMINI_API_KEY,
-          }),
-        }
-      ).then((res) => {
-        if (res.statusCode === 200) {
-          console.log('AI Analysis:', res.data.reply);
-          setAnalysisResultTestCaseAnalysis(res.data.reply);
+    // Make the API request to fetch failed test case analysis
+    fetchData<ServerResponse<AiChatResponse>>(
+      `/gen-ai-service/analyse-failed-test-cases`,
+      SERVICE.AI,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          testProgramCode,
+          expectedOutput,
+          actualOutput,
+          solutionCode,
+          question,
+          userId,
+          roomId,
+        }),
+      }
+    ).then((res) => {
+      if (res.statusCode === 200) {
+        console.log('AI Analysis:', res.data.reply);
+        setAnalysisResultTestCaseAnalysis(res.data.reply);
 
-          const lines = res.data.reply.trim().split('\n');
-          displayFailedTestCaseLines(lines);
-          setAnalysisResultTestCaseAnalysis(res.data.reply);
-        } else {
-          console.error('Error fetching failed test case analysis:', res.data.reply);
-          setAnalysisResultTestCaseAnalysis('Failed to fetch failed test case analysis. Please try again.');
-          setErrorRetrievingTestCaseAnalysis(true);
-        }
-      });
-    } catch (error) {
-      console.error('Error fetching failed test case analysis:', error);
-      setAnalysisResultTestCaseAnalysis('Failed to fetch failed test case analysis. Please try again.');
-      setErrorRetrievingTestCaseAnalysis(true);
-    } 
+        const lines = res.data.reply.trim().split('\n');
+        displayFailedTestCaseLines(lines);
+        setAnalysisResultTestCaseAnalysis(res.data.reply);
+        setLoadingTestCaseAnalysis(false);
+      } else {
+        console.log('got problem with ai analysis');
+        console.error('Error fetching failed test case analysis:', res.data.reply);
+        setAnalysisResultTestCaseAnalysis('Failed to fetch failed test case analysis. Please try again.');
+        setErrorRetrievingTestCaseAnalysis(true);
+        setLoadingTestCaseAnalysis(false);
+      }
+    }).catch((error) => {
+      // Simulate delay before error handling
+      setTimeout(() => {
+        console.error('Error fetching failed test case analysis:', error);
+        setAnalysisResultTestCaseAnalysis('Failed to fetch failed test case analysis. Please try again.');
+        setErrorRetrievingTestCaseAnalysis(true);
+        setLoadingTestCaseAnalysis(false);
+      }, 1500);  // 1.5 second delay before handling the error
+    });
   };
 
   const displayFailedTestCaseLines = (lines: string[]) => {

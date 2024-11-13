@@ -228,9 +228,10 @@ jobs:
           node-version: 20
 
       - name: Deploy to VPS
-        uses: appleboy/ssh-action@1.1.0
+        uses: appleboy/ssh-action@v1.1.0
         env:
-          CURR_BRANCH: ${{ github.head_ref }}
+          # References https://stackoverflow.com/questions/58033366/how-to-get-the-current-branch-within-github-actions
+          CURR_BRANCH: ${{ github.head_ref || github.ref_name }}
           USER_SERVICE_SECRETS: ${{ secrets.USER_SERVICE_SECRETS }}
           QUESTION_SERVICE_SECRETS: ${{ secrets.QUESTION_SERVICE_SECRETS }}
           MATCHING_SERVICE_SECRETS: ${{ secrets.MATCHING_SERVICE_SECRETS }}
@@ -245,55 +246,58 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          envs: CURR_BRANCH,USER_SERVICE_SECRETS,QUESTION_SERVICE_SECRETS,MATCHING_SERVICE_SECRETS,COLLABORATION_SERVICE_SECRETS,COMMUNICATION_SERVICE_SECRETS,HISTORY_SERVICE_SECRETS,RUN_SERVICE_SECRETS,FRONTEND_SECRETS,AI_CHAT_SERVICE_SECRETS
+          script_stop: true
+          envs: CURR_BRANCH,USER_SERVICE_SECRETS,QUESTION_SERVICE_SECRETS,MATCHING_SERVICE_SECRETS,COLLABORATION_SERVICE_SECRETS,COMMUNICATION_SERVICE_SECRETS,HISTORY_SERVICE_SECRETS,RUN_SERVICE_SECRETS,FRONTEND_SECRETS,GEN_AI_SERVICE_SECRETS
           script: |
+            . .nvm/nvm.sh
+            nvm use 20
+
             cd cs3219-ay2425s1-project-g05
-            git checkout "$CURR_BRANCH"
+            git checkout $CURR_BRANCH
             git pull
 
             # echo in .env vars and save them into the directories
             cd question-service
-            echo "$QUESTION_SERVICE_SECRETS" | base64 --decode > .env
+            echo $QUESTION_SERVICE_SECRETS | base64 --decode > .env
             cd ..
 
             cd matching-service
-            echo "$MATCHING_SERVICE_SECRETS" | base64 --decode > .env
+            echo $MATCHING_SERVICE_SECRETS | base64 --decode > .env
             cd ..
 
             cd collaboration-service
-            echo "$COLLABORATION_SERVICE_SECRETS" | base64 --decode > .env
+            echo $COLLABORATION_SERVICE_SECRETS | base64 --decode > .env
             cd ..
 
             cd communication-service
-            echo "$COMMUNICATION_SERVICE_SECRETS" | base64 --decode > .env
+            echo $COMMUNICATION_SERVICE_SECRETS | base64 --decode > .env
             cd ..
 
             cd history-service
-            echo "$HISTORY_SERVICE_SECRETS" | base64 --decode > .env
+            echo $HISTORY_SERVICE_SECRETS | base64 --decode > .env
             cd ..
 
             cd run-service
-            echo "$RUN_SERVICE_SECRETS" | base64 --decode > .env
+            echo $RUN_SERVICE_SECRETS | base64 --decode > .env
             cd ..
 
             cd gen-ai-service
-            echo "$GEN_AI_SERVICE_SECRETS" | base64 --decode > .env
+            echo $GEN_AI_SERVICE_SECRETS | base64 --decode > .env
             cd ..
 
             cd user-service
-            echo "$USER_SERVICE_SECRETS" | base64 --decode > .env
+            echo $USER_SERVICE_SECRETS | base64 --decode > .env
             cd ..
 
             cd peer-prep
-            echo "$FRONTEND_SECRETS" | base64 --decode > .env
+            echo $FRONTEND_SECRETS | base64 --decode > .env
             npm install
             npm run build
-            mv dist/* /var/www/peerprep.marcussoh.com/
 
-            # delete to prevent node module conflicts
-            rm -rf node_modules
+            # copy files using rsync
+            rsync -a --no-owner --no-times --no-group --no-perms --delete dist/ /var/www/peerprep.marcussoh.com/
             cd ..
 
             # handle docker compose
-            docker compose -f docker-compose.yml down
-            docker compose -f docker-compose.yml up --build -d
+            docker compose down
+            docker compose up --build -d

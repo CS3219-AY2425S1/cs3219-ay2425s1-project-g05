@@ -1,0 +1,13 @@
+.category {
+  background-color: light-dark(var(--mantine-color-blue-2), "blue");
+  padding: 0.25rem 0.5rem;
+  display: flex;
+  border-radius: var(--mantine-radius-sm);
+  align-items: center;
+  justify-content: center;
+}
+
+.category-text {
+  font-size: var(--mantine-font-size-xs);
+  text-transform: uppercase;
+}

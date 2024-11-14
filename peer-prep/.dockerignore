@@ -1,0 +1,2 @@
+# ignore the .env if you are uploading the images to docker hub
+# .env

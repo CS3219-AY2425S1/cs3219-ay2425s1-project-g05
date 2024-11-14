@@ -1,0 +1,517 @@
+{
+  "1": {
+    "title": "Reverse String",
+    "description": {
+      "descriptionText": "Write a function that reverses a string. The input string is given as an array of characters s.\n\nYou must do this by modifying the input array in-place with O(1) extra memory.\n\n \n\nExample:\n\nInput: s = [\"h\",\"e\",\"l\",\"l\",\"o\"]\nOutput: [\"o\",\"l\",\"l\",\"e\",\"h\"]\n\n\nConstraints:\n\n\n\n\n\n1 <= s.length <= 105\n\n\n\ns[i] is a printable ascii character.",
+      "descriptionHtml": "<p>Write a function that reverses a string. The input string is given as an array of characters <code>s</code>.</p><p>You must do this by modifying the input array in-place with <code>O(1)</code> extra memory.</p><p>&nbsp;</p><p><strong>Example:</strong></p><pre><code>Input: s = [\"h\",\"e\",\"l\",\"l\",\"o\"]\nOutput: [\"o\",\"l\",\"l\",\"e\",\"h\"]\n</code></pre><p><strong>Constraints:</strong></p><ul><li><p><code>1 &lt;= s.length &lt;= 105</code></p></li><li><p><code>s[i]</code> is a printable ascii character.</p></li></ul>"
+    },
+    "categoriesId": [1],
+    "difficulty": "EASY",
+    "testCases": [
+      {
+        "testCode": "s = [\"h\",\"e\",\"l\",\"l\",\"o\"]\nSolution().reverseString(s)\nprint(s)",
+        "input": "[\"h\",\"e\",\"l\",\"l\",\"o\"]",
+        "isPublic": true,
+        "expectedOutput": "['o', 'l', 'l', 'e', 'h']"
+      },
+      {
+        "testCode": "s = [\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]\nSolution().reverseString(s)\nprint(s)",
+        "input": "[\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]",
+        "isPublic": false,
+        "expectedOutput": "['h', 'a', 'n', 'n', 'a', 'H']"
+      }
+    ],
+    "templateCode": "from typing import List\nclass Solution:\n    def reverseString(self, s: List[str]) -> None:\n        \"\"\"\n        Do not return anything, modify s in-place instead.\n        \"\"\"\n        ",
+    "solutionCode": "from typing import List\nclass Solution:\n    def reverseString(self, s: List[str]) -> None:\n        i, j = 0, len(s) - 1\n        while i < j:\n            s[i], s[j] = s[j], s[i]\n            i += 1\n            j -= 1",
+    "link": "https://leetcode.com/problems/reverse-string/description/"
+  },
+  "2": {
+    "title": "Linked List Cycle Detection",
+    "description": {
+      "descriptionText": "Given head, the head of a linked list, determine if the linked list has a cycle in it.\n\nThere is a cycle in a linked list if there is some node in the list that can be reached again by continuously following the next pointer. Internally, pos is used to denote the index of the node that tail's next pointer is connected to. Note that pos is not passed as a parameter.\n\nReturn true if there is a cycle in the linked list. Otherwise, return false.\n\nConstraints:\n\n\n\n\n\nThe number of the nodes in the list is in the range [0, 104].\n\n\n\n-105 <= Node.val <= 105\n\n\n\npos is -1 or a valid index in the linked-list.",
+      "descriptionHtml": "<p>Given <code>head</code>, the head of a linked list, determine if the linked list has a cycle in it.</p><p>There is a cycle in a linked list if there is some node in the list that can be reached again by continuously following the&nbsp;<code>next</code>&nbsp;pointer. Internally, <code>pos</code>&nbsp;is used to denote the index of the node that&nbsp;tail's&nbsp;<code>next</code>&nbsp;pointer is connected to.&nbsp;<strong>Note that&nbsp;</strong><code>pos</code><strong>&nbsp;is not passed as a parameter</strong>.</p><p>Return&nbsp;<code>true</code><em> if there is a cycle in the linked list</em>. Otherwise, return <code>false</code>.<br><br><strong>Constraints:</strong></p><ul><li><p>The number of the nodes in the list is in the range <code>[0, 104]</code>.</p></li><li><p><code>-105 &lt;= Node.val &lt;= 105</code></p></li><li><p><code>pos</code> is <code>-1</code> or a <strong>valid index</strong> in the linked-list.</p></li></ul>"
+    },
+    "categoriesId": [1, 3],
+    "difficulty": "EASY",
+    "testCases": [
+      {
+        "testCode": "head = ListNode(1)  # Single node with no cycle\nresult = Solution().hasCycle(head)\nprint(result)",
+        "input": "head = [1], pos = -1",
+        "isPublic": false,
+        "expectedOutput": "False"
+      },
+      {
+        "testCode": "head = ListNode(1)\nhead.next = ListNode(2)\nhead.next.next = head  # Creates a cycle\nresult = Solution().hasCycle(head)\nprint(result)",
+        "input": "head = [1,2], pos = 0",
+        "isPublic": false,
+        "expectedOutput": "True"
+      },
+      {
+        "testCode": "head = ListNode(3)\nhead.next = ListNode(2)\nhead.next.next = ListNode(0)\nhead.next.next.next = ListNode(-4)\nhead.next.next.next.next = head.next  # Creates a cycle\nresult = Solution().hasCycle(head)\nprint(result)",
+        "input": "head = [3,2,0,-4], pos = 1",
+        "isPublic": true,
+        "expectedOutput": "True"
+      }
+    ],
+    "templateCode": "from typing import Optional\\n# Definition for singly-linked list.\\nclass ListNode:\\n      def __init__(self, x):\\n         self.val = x\\n         self.next = None\\n\\nclass Solution:\\n    def hasCycle(self, head: Optional[ListNode]) -> bool:\\n ",
+    "solutionCode": "from typing import Optional\n# Definition for singly-linked list.\nclass ListNode:\n      def __init__(self, x):\n         self.val = x\n         self.next = None\n\nclass Solution:\n    def hasCycle(self, head: Optional[ListNode]) -> bool:\n        if not head or not head.next:\n            return False\n        slow = head\n        fast = head.next\n        while slow != fast:\n            if not fast or not fast.next:\n                return False\n            slow = slow.next\n            fast = fast.next.next\n        return True",
+    "link": "https://leetcode.com/problems/linked-list-cycle/"
+  },
+  "3": {
+    "title": "Rotate Image",
+    "description": {
+      "descriptionText": "You are given an n x n 2D matrix representing an image, rotate the image by 90 degrees (clockwise).\n\nYou have to rotate the image in-place, which means you have to modify the input 2D matrix directly. DO NOT allocate another 2D matrix and do the rotation.\n\nExample:\n\nInput: matrix = [[1,2,3],[4,5,6],[7,8,9]]\nOutput: [[7,4,1],[8,5,2],[9,6,3]]\n\nConstraints:\n\n\n\n\n\nn == matrix.length == matrix[i].length\n\n\n\n1 <= n <= 20\n\n\n\n-1000 <= matrix[i][j] <= 1000",
+      "descriptionHtml": "<p>You are given an <code>n x n</code> 2D <code>matrix</code> representing an image, rotate the image by <strong>90</strong> degrees (clockwise).</p><p>You have to rotate the image <strong>in-place</strong>, which means you have to modify the input 2D matrix directly. <strong>DO NOT</strong> allocate another 2D matrix and do the rotation.<br><br><strong>Example:</strong></p><pre><code>Input: matrix = [[1,2,3],[4,5,6],[7,8,9]]\nOutput: [[7,4,1],[8,5,2],[9,6,3]]</code></pre><p><strong>Constraints:</strong></p><ul><li><p><code>n == matrix.length == matrix[i].length</code></p></li><li><p><code>1 &lt;= n &lt;= 20</code></p></li><li><p><code>-1000 &lt;= matrix[i][j] &lt;= 1000</code></p></li></ul>"
+    },
+    "categoriesId": [{ "$numberInt": "0" }, { "$numberInt": "1" }],
+    "difficulty": "MEDIUM",
+    "testCases": [
+      {
+        "testCode": "matrix = [[1,2,3],[4,5,6],[7,8,9]]\nsolution = Solution()\nsolution.rotate(matrix)\nprint(matrix)",
+        "input": "matrix = [[1,2,3],[4,5,6],[7,8,9]]",
+        "isPublic": false,
+        "expectedOutput": "[[7, 4, 1], [8, 5, 2], [9, 6, 3]]"
+      },
+      {
+        "testCode": "matrix = [[5,1,9,11],[2,4,8,10],[13,3,6,7],[15,14,12,16]]\nsolution = Solution()\nsolution.rotate(matrix)\nprint(matrix)",
+        "input": "matrix = [[5,1,9,11],[2,4,8,10],[13,3,6,7],[15,14,12,16]]",
+        "isPublic": true,
+        "expectedOutput": "[[15, 13, 2, 5], [14, 3, 4, 1], [12, 6, 8, 9], [16, 7, 10, 11]]"
+      }
+    ],
+    "templateCode": "class Solution:\n    def rotate(self, matrix: List[List[int]]) -> None:\n        \"\"\"\n        Do not return anything, modify matrix in-place instead.\n        \"\"\"\n        ",
+    "solutionCode": "from typing import List\nclass Solution:\n    def rotate(self, matrix: List[List[int]]) -> None:\n        edge_length = len(matrix)\n        top = 0\n        bottom = edge_length - 1\n        while top < bottom:\n            for col in range(edge_length):\n                temp = matrix[top][col]\n                matrix[top][col] = matrix[bottom][col]\n                matrix[bottom][col] = temp\n            top += 1\n            bottom -= 1\n        for row in range(edge_length):\n            for col in range(row+1, edge_length):\n                temp = matrix[row][col]\n                matrix[row][col] = matrix[col][row]\n                matrix[col][row] = temp\n        return matrix",
+    "link": "https://leetcode.com/problems/rotate-image/"
+  },
+  "4": {
+    "title": "Airplane Seat Assignment Probability",
+    "description": {
+      "descriptionText": "n passengers board an airplane with exactly n seats. The first passenger has lost the ticket and picks a seat randomly. But after that, the rest of the passengers will:\n\n\n\n\n\nTake their own seat if it is still available, and\n\n\n\nPick other seats randomly when they find their seat occupied\n\nReturn the probability that the nth person gets his own seat.\n\n",
+      "descriptionHtml": "<p><code>n</code> passengers board an airplane with exactly <code>n</code> seats. The first passenger has lost the ticket and picks a seat randomly. But after that, the rest of the passengers will:</p><ul><li><p>Take their own seat if it is still available, and</p></li><li><p>Pick other seats randomly when they find their seat occupied</p></li></ul><p>Return <em>the probability that the </em><code>nth</code><em> person gets his own seat</em>.</p><p></p>"
+    },
+    "categoriesId": [4],
+    "difficulty": "MEDIUM",
+    "testCases": [
+      {
+        "testCode": "n = 2\nsolution = Solution()\noutput = solution.nthPersonGetsNthSeat(n)\nprint(output)",
+        "input": "n = 2",
+        "isPublic": true,
+        "expectedOutput": "0.5"
+      },
+      {
+        "testCode": "n = 1\nsolution = Solution()\noutput = solution.nthPersonGetsNthSeat(n)\nprint(output)",
+        "input": "n = 1",
+        "isPublic": false,
+        "expectedOutput": "1.0"
+      }
+    ],
+    "templateCode": "class Solution:\n    def nthPersonGetsNthSeat(self, n: int) -> float:\n        ",
+    "solutionCode": "class Solution:\n    def nthPersonGetsNthSeat(self, n: int) -> float:\n        return 1.0 if n == 1 else 0.5",
+    "link": "https://leetcode.com/problems/airplane-seat-assignment-probability/"
+  },
+  "5": {
+    "title": "Sliding Window Maximum",
+    "description": {
+      "descriptionText": "You are given an array of integers nums, there is a sliding window of size k which is moving from the very left of the array to the very right. You can only see the k numbers in the window. Each time the sliding window moves right by one position.\n\nReturn the max sliding window.\n\nExample:\n\nInput: nums = [1], k = 1\nOutput: [1]\n\nConstraints:\n\n\n\n\n\n1 <= nums.length <= 105\n\n\n\n-104 <= nums[i] <= 104\n\n\n\n1 <= k <= nums.length",
+      "descriptionHtml": "<p>You are given an array of integers&nbsp;<code>nums</code>, there is a sliding window of size <code>k</code> which is moving from the very left of the array to the very right. You can only see the <code>k</code> numbers in the window. Each time the sliding window moves right by one position.</p><p>Return <em>the max sliding window</em>.<br><br><strong>Example:</strong></p><pre><code>Input: nums = [1], k = 1\nOutput: [1]</code></pre><p><strong>Constraints:</strong></p><ul><li><p><code>1 &lt;= nums.length &lt;= 105</code></p></li><li><p><code>-104 &lt;= nums[i] &lt;= 104</code></p></li><li><p><code>1 &lt;= k &lt;= nums.length</code></p></li></ul>"
+    },
+    "categoriesId": [0, 1],
+    "difficulty": "HARD",
+    "testCases": [
+      {
+        "testCode": "nums = [1]\nk = 1\nsolution = Solution()\noutput = solution.maxSlidingWindow(nums, k)\nprint(output)",
+        "input": "nums = [1], k = 1",
+        "isPublic": true,
+        "expectedOutput": "[1]"
+      },
+      {
+        "testCode": "nums = [1,3,-1,-3,5,3,6,7]\nk = 3\nsolution = Solution()\noutput = solution.maxSlidingWindow(nums, k)\nprint(output)",
+        "input": "nums = [1,3,-1,-3,5,3,6,7], k = 3",
+        "isPublic": false,
+        "expectedOutput": "[3, 3, 5, 5, 6, 7]"
+      }
+    ],
+    "templateCode": "from typing import List\nclass Solution:\n    def maxSlidingWindow(self, nums: List[int], k: int) -> List[int]:\n        ",
+    "solutionCode": "from typing import List\nfrom collections import deque\nclass Solution(object):\n    def maxSlidingWindow(self, nums, k):\n        \"\"\"\n        :type nums: List[int]\n        :type k: int\n        :rtype: List[int]\n        \"\"\"\n        ans = []\n        dq = deque()\n\n        for i in range(len(nums)):\n            if dq and dq[0] <= (i-k):\n                dq.popleft()\n\n            while dq and nums[dq[-1]] <= nums[i]:\n                dq.pop()\n            \n            dq.append(i)\n\n            if i >= k-1:\n                ans.append(nums[dq[0]])        \n        return ans",
+    "link": "https://leetcode.com/problems/sliding-window-maximum/description/"
+  },
+  "6": {
+    "title": "Chalkboard XOR Game",
+    "description": {
+      "descriptionText": "You are given an array of integers nums represents the numbers written on a chalkboard.\n\nAlice and Bob take turns erasing exactly one number from the chalkboard, with Alice starting first. If erasing a number causes the bitwise XOR of all the elements of the chalkboard to become 0, then that player loses. The bitwise XOR of one element is that element itself, and the bitwise XOR of no elements is 0.\n\nAlso, if any player starts their turn with the bitwise XOR of all the elements of the chalkboard equal to 0, then that player wins.\n\nReturn true if and only if Alice wins the game, assuming both players play optimally.\n\nExample 1:\n\nInput: nums = [1,1,2]\nOutput: false\nExplanation: \nAlice has two choices: erase 1 or erase 2. \nIf she erases 1, the nums array becomes [1, 2]. The bitwise XOR of all the elements of the chalkboard is 1 XOR 2 = 3. Now Bob can remove any element he wants, because Alice will be the one to erase the last element and she will lose. \nIf Alice erases 2 first, now nums become [1, 1]. The bitwise XOR of all the elements of the chalkboard is 1 XOR 1 = 0. Alice will lose.\n\nExample 2:\n\nInput: nums = [0,1]\nOutput: true\n\nConstraints:\n\n\n\n\n\n1 <= nums.length <= 1000\n\n\n\n0 <= nums[i] < 216",
+      "descriptionHtml": "<p>You are given an array of integers <code>nums</code> represents the numbers written on a chalkboard.</p><p>Alice and Bob take turns erasing exactly one number from the chalkboard, with Alice starting first. If erasing a number causes the bitwise XOR of all the elements of the chalkboard to become <code>0</code>, then that player loses. The bitwise XOR of one element is that element itself, and the bitwise XOR of no elements is <code>0</code>.</p><p>Also, if any player starts their turn with the bitwise XOR of all the elements of the chalkboard equal to <code>0</code>, then that player wins.</p><p>Return <code>true</code> <em>if and only if Alice wins the game, assuming both players play optimally</em>.<br><br><strong>Example 1:</strong></p><pre><code>Input: nums = [1,1,2]\nOutput: false\nExplanation: \nAlice has two choices: erase 1 or erase 2. \nIf she erases 1, the nums array becomes [1, 2]. The bitwise XOR of all the elements of the chalkboard is 1 XOR 2 = 3. Now Bob can remove any element he wants, because Alice will be the one to erase the last element and she will lose. \nIf Alice erases 2 first, now nums become [1, 1]. The bitwise XOR of all the elements of the chalkboard is 1 XOR 1 = 0. Alice will lose.</code></pre><p><strong>Example 2:</strong></p><pre><code>Input: nums = [0,1]\nOutput: true</code></pre><p><strong>Constraints:</strong></p><ul><li><p><code>1 &lt;= nums.length &lt;= 1000</code></p></li><li><p><code>0 &lt;= nums[i] &lt; 216</code></p></li></ul>"
+    },
+    "categoriesId": [4],
+    "difficulty": "HARD",
+    "testCases": [
+      {
+        "testCode": "nums = [1,1,2]\nser = Solution()\noutput = ser.xorGame(nums)\nprint(output)",
+        "input": "nums = [1,1,2]",
+        "isPublic": true,
+        "expectedOutput": "False",
+        "_id": { "$oid": "6728c73675578be649dec44c" }
+      },
+      {
+        "testCode": "nums = [0,1]\nser = Solution()\noutput = ser.xorGame(nums)\nprint(output)",
+        "input": "nums = [0,1]",
+        "isPublic": true,
+        "expectedOutput": "True"
+      },
+      {
+        "testCode": "nums = [1,2,3]\nser = Solution()\noutput = ser.xorGame(nums)\nprint(output)",
+        "input": "nums = [1,2,3]",
+        "isPublic": false,
+        "expectedOutput": "True"
+      }
+    ],
+    "templateCode": "from typing import List\nclass Solution:\n    def xorGame(self, nums: List[int]) -> bool:\n        ",
+    "solutionCode": "from typing import List\nfrom functools import reduce\nclass Solution:\n    def xorGame(self, nums: List[int]) -> bool:\n        return reduce(lambda x,y:x^y,nums)==0 or len(nums)%2==0",
+    "link": "https://leetcode.com/problems/chalkboard-xor-game/description/"
+  },
+  "7": {
+    "title": "Nth Highest Salary",
+    "description": {
+      "descriptionText": "Given table with:\n\n\n\n\n\nid (int)\n\n\n\nsalary (int)\n\n\nEmployee id is the primary key (column with unique values) for this table. Each row of this table contains information about the salary of an employee.",
+      "descriptionHtml": "<p>Given table with:</p><ol><li><p>id (int)</p></li><li><p>salary (int)</p></li></ol><p><br>Employee id is the primary key (column with unique values) for this table. Each row of this table contains information about the salary of an employee.</p>"
+    },
+    "categoriesId": [2],
+    "difficulty": "MEDIUM",
+    "testCases": [
+      {
+        "testCode": "No test code",
+        "input": "No test cases available",
+        "isPublic": false,
+        "expectedOutput": "NA"
+      }
+    ],
+    "templateCode": "CREATE FUNCTION getNthHighestSalary(N INT) RETURNS INT\nBEGIN\n  RETURN (\n      # Write your MySQL query statement below.\n\n  );\nEND",
+    "solutionCode": "# Write your MySQL query statement below.\nCREATE FUNCTION getNthHighestSalary(N INT) RETURNS INT\nBEGIN\n  RETURN (\n    SELECT Salary \n    FROM (\n      SELECT Salary, DENSE_RANK() OVER (ORDER BY Salary DESC) AS ranking\n      FROM Employee\n    ) AS ranked_salaries\n    WHERE ranking = N\n    LIMIT 1\n  );\nEND;",
+    "link": "https://leetcode.com/problems/nth-highest-salary/description/"
+  },
+  "8": {
+    "title": "Fibonacci Number",
+    "description": {
+      "descriptionText": "The Fibonacci numbers, commonly denoted F(n) form a sequence, called the Fibonacci sequence, such that each number is the sum of the two preceding ones, starting from 0 and 1. That is,\n\nF(0) = 0, F(1) = 1\nF(n) = F(n - 1) + F(n - 2), for n > 1.\n\n\nGiven n, calculate F(n).",
+      "descriptionHtml": "<p>The <strong>Fibonacci numbers</strong>, commonly denoted <code>F(n)</code> form a sequence, called the <strong>Fibonacci sequence</strong>, such that each number is the sum of the two preceding ones, starting from <code>0</code> and <code>1</code>. That is,</p><pre><code>F(0) = 0, F(1) = 1\nF(n) = F(n - 1) + F(n - 2), for n &gt; 1.\n</code></pre><p>Given <code>n</code>, calculate <code>F(n)</code>.</p>"
+    },
+    "categoriesId": [7],
+    "difficulty": "EASY",
+    "testCases": [
+      {
+        "testCode": "n=2\nsol=Solution()\nprint(sol.fib(n))",
+        "input": "n = 2",
+        "isPublic": true,
+        "expectedOutput": "1"
+      },
+      {
+        "testCode": "n=3\nsol=Solution()\nprint(sol.fib(n))\n",
+        "input": "n = 3",
+        "isPublic": true,
+        "expectedOutput": "2"
+      },
+      {
+        "testCode": "n=4\nsol=Solution()\nprint(sol.fib(n))\n",
+        "input": "n = 4",
+        "isPublic": false,
+        "expectedOutput": "3"
+      }
+    ],
+    "templateCode": "class Solution:\n    def fib(self, n: int) -> int:\n        ",
+    "solutionCode": "class Solution(object):\n    memo = {}\n    def fib(self, n):\n        \"\"\"\n        :type n: int\n        :rtype: int\n        \"\"\"\n        if n == 0: return 0\n        if n == 1: return 1\n        if n in self.memo:return self.memo[n]\n        result = self.fib(n-1) + self.fib(n-2)\n        self.memo[n] = result\n        return result",
+    "link": "https://leetcode.com/problems/fibonacci-number/description/"
+  },
+  "9": {
+    "title": "Trips and Users",
+    "description": {
+      "descriptionText": "Given table Trips:\n\n\n\n\n\nid (int)\n\n\n\nclient_id (int)\n\n\n\ndriver_id (int)\n\n\n\ncity_id (int)\n\n\n\nstatus (enum)\n\n\n\nrequest_at (date)\n\nid is the primary key. The table holds all taxi trips. Each trip has a unique id, while client_id and driver_id are foreign keys to the users_id at the Users table. Status is an ENUM (category) type of ('completed', 'cancelled_by_driver', 'cancelled_by_client').\n\n\n\nAnd table Users:\n\n\n\n\n\nusers_id (int)\n\n\n\n banned (enum)\n\n\n\nrole (enum) \n\n\nusers_id is the primary key (column with unique values) for this table. The table holds all users. Each user has a unique users_id, and role is an ENUM type of ('client', 'driver', 'partner'). Banned is an ENUM (category) type of ('Yes', 'No').\n\nThe cancellation rate is computed by dividing the number of canceled (by client or driver) requests with unbanned users by the total number of requests with unbanned users on that day. Write a solution to find the cancellation rate of requests with unbanned users (both client and driver must not be banned) each day between '2013-10-01' and '2013-10-03'. Round Cancellation Rate to two decimal points. Return the result table in any order.",
+      "descriptionHtml": "<p>Given table Trips:</p><ol><li><p>id (int)</p></li><li><p>client_id (int)</p></li><li><p>driver_id (int)</p></li><li><p>city_id (int)</p></li><li><p>status (enum)</p></li><li><p>request_at (date)</p></li></ol><p>id is the primary key. The table holds all taxi trips. Each trip has a unique id, while client_id and driver_id are foreign keys to the users_id at the Users table. Status is an ENUM (category) type of ('completed', 'cancelled_by_driver', 'cancelled_by_client').</p><p></p><p>And table Users:</p><ol><li><p>users_id (int)</p></li><li><p> banned (enum)</p></li><li><p>role (enum) <br></p></li></ol><p>users_id is the primary key (column with unique values) for this table. The table holds all users. Each user has a unique users_id, and role is an ENUM type of ('client', 'driver', 'partner'). Banned is an ENUM (category) type of ('Yes', 'No').</p><p>The cancellation rate is computed by dividing the number of canceled (by client or driver) requests with unbanned users by the total number of requests with unbanned users on that day. Write a solution to find the cancellation rate of requests with unbanned users (both client and driver must not be banned) each day between '2013-10-01' and '2013-10-03'. Round Cancellation Rate to two decimal points. Return the result table in any order.</p>"
+    },
+    "categoriesId": [2],
+    "difficulty": "HARD",
+    "testCases": [
+      {
+        "testCode": "No Test Code available",
+        "input": "No Test Case available",
+        "isPublic": false,
+        "expectedOutput": "NA"
+      }
+    ],
+    "templateCode": "# Write your MySQL query statement below",
+    "solutionCode": "-- Write your PostgreSQL query statement below\n\nSELECT t.request_at AS Day,\nROUND(COUNT(CASE WHEN t.status = 'cancelled_by_driver' THEN status \n  WHEN t.status = 'cancelled_by_client' THEN status\n  ELSE null END)::NUMERIC/COUNT(status),2) AS \"Cancellation Rate\"\nFROM Trips t \nLEFT JOIN Users u1 ON t.driver_id = u1.users_id\nLEFT JOIN Users u2 ON t.client_id = u2.users_id \nWHERE u1.banned = 'No' AND u2.banned = 'No' AND t.request_at BETWEEN '2013-10-01' and '2013-10-03'\nGROUP BY t.request_at\nORDER BY request_at",
+    "link": "https://leetcode.com/problems/trips-and-users/"
+  },
+  "10": {
+    "title": "Divide Two Integers",
+    "description": {
+      "descriptionText": "Given two integers dividend and divisor, divide two integers without using multiplication, division, and mod operator.\n\nThe integer division should truncate toward zero, which means losing its fractional part. For example, 8.345 would be truncated to 8, and -2.7335 would be truncated to -2.\n\nReturn the quotient after dividing dividend by divisor.\n\nNote: Assume we are dealing with an environment that could only store integers within the 32-bit signed integer range: [−231, 231 − 1]. For this problem, if the quotient is strictly greater than 231 - 1, then return 231 - 1, and if the quotient is strictly less than -231, then return -231.\n\n\n\nExample 1:\n\nInput: dividend = 10, divisor = 3\nOutput: 3\nExplanation: 10/3 = 3.33333.. which is truncated to 3.\n\n\n\nConstraints:\n\n\n\n\n\n-231 <= dividend, divisor <= 231 - 1\n\n\n\ndivisor != 0",
+      "descriptionHtml": "<p>Given two integers <code>dividend</code> and <code>divisor</code>, divide two integers <strong>without</strong> using multiplication, division, and mod operator.</p><p>The integer division should truncate toward zero, which means losing its fractional part. For example, <code>8.345</code> would be truncated to <code>8</code>, and <code>-2.7335</code> would be truncated to <code>-2</code>.</p><p>Return <em>the </em><strong><em>quotient</em></strong><em> after dividing </em><code>dividend</code><em> by </em><code>divisor</code>.</p><p><strong>Note: </strong>Assume we are dealing with an environment that could only store integers within the <strong>32-bit</strong> signed integer range: <code>[−231, 231 − 1]</code>. For this problem, if the quotient is <strong>strictly greater than</strong> <code>231 - 1</code>, then return <code>231 - 1</code>, and if the quotient is <strong>strictly less than</strong> <code>-231</code>, then return <code>-231</code>.<br><br></p><p><strong>Example 1:</strong></p><pre><code>Input: dividend = 10, divisor = 3\nOutput: 3\nExplanation: 10/3 = 3.33333.. which is truncated to 3.</code></pre><p></p><p><strong>Constraints:</strong></p><ul><li><p><code>-231 &lt;= dividend, divisor &lt;= 231 - 1</code></p></li><li><p><code>divisor != 0</code></p></li></ul>"
+    },
+    "categoriesId": [6],
+    "difficulty": "MEDIUM",
+    "testCases": [
+      {
+        "testCode": "dividend = 10\ndivisor = 3\nser = Solution()\noutput = ser.divide(dividend, divisor)\nprint(output)",
+        "input": "dividend = 10, divisor = 3",
+        "isPublic": true,
+        "expectedOutput": "3"
+      },
+      {
+        "testCode": "dividend = 7\ndivisor = -3\nser = Solution()\noutput = ser.divide(dividend, divisor)\nprint(output)",
+        "input": "dividend = 7, divisor = -3",
+        "isPublic": true,
+        "expectedOutput": "-2"
+      }
+    ],
+    "templateCode": "class Solution:\n    def divide(self, dividend: int, divisor: int) -> int:\n        ",
+    "solutionCode": "class Solution:\n    def divide(self, dividend: int, divisor: int) -> int:\n        if dividend == 0:\n            return 0\n        if dividend == -2**31 and divisor == -1:\n            return 2**31 - 1\n\n        if (dividend < 0 and divisor > 0) or (dividend > 0 and divisor < 0):\n            sign = -1\n        else:\n            sign = 1\n\n        quotient = 0\n        multiple = 1\n        dividend = abs(dividend)\n        divisor = abs(divisor)\n        \n        while dividend >= (divisor << 1): #dividend >= 2*divisor\n            divisor <<= 1   #divisor *= 2\n            multiple <<= 1  #multiple *= 2\n        while multiple > 0:\n            if dividend >= divisor:\n                dividend -= divisor\n                quotient += multiple\n            divisor >>= 1   #divisor /= 2\n            multiple >>= 1  #multiple /= 2\n        \n        return sign * quotient\n        ",
+    "link": "https://leetcode.com/problems/divide-two-integers/description/"
+  },
+  "11": {
+    "title": "Nim Game",
+    "description": {
+      "descriptionText": "You are playing the following Nim Game with your friend:\n\n\n\n\n\nInitially, there is a heap of stones on the table.\n\n\n\nYou and your friend will alternate taking turns, and you go first.\n\n\n\nOn each turn, the person whose turn it is will remove 1 to 3 stones from the heap.\n\n\n\nThe one who removes the last stone is the winner.\n\nGiven n, the number of stones in the heap, return true if you can win the game assuming both you and your friend play optimally, otherwise return false.\n\nExample 1:\n\nInput: n = 4\nOutput: false\nExplanation: These are the possible outcomes:\n1. You remove 1 stone. Your friend removes 3 stones, including the last stone. Your friend wins.\n2. You remove 2 stones. Your friend removes 2 stones, including the last stone. Your friend wins.\n3. You remove 3 stones. Your friend removes the last stone. Your friend wins.\nIn all outcomes, your friend wins.\n\n\nExample 2:\n\nInput: n = 1\nOutput: true\n\n\nConstraints:\n\n\n\n\n\n1 <= n <= 231 - 1",
+      "descriptionHtml": "<p>You are playing the following Nim Game with your friend:</p><ul><li><p>Initially, there is a heap of stones on the table.</p></li><li><p>You and your friend will alternate taking turns, and <strong>you go first</strong>.</p></li><li><p>On each turn, the person whose turn it is will remove 1 to 3 stones from the heap.</p></li><li><p>The one who removes the last stone is the winner.</p></li></ul><p>Given <code>n</code>, the number of stones in the heap, return <code>true</code><em> if you can win the game assuming both you and your friend play optimally, otherwise return </em><code>false</code>.<br><br><strong>Example 1:</strong></p><pre><code>Input: n = 4\nOutput: false\nExplanation: These are the possible outcomes:\n1. You remove 1 stone. Your friend removes 3 stones, including the last stone. Your friend wins.\n2. You remove 2 stones. Your friend removes 2 stones, including the last stone. Your friend wins.\n3. You remove 3 stones. Your friend removes the last stone. Your friend wins.\nIn all outcomes, your friend wins.</code></pre><p><br><strong>Example 2:</strong></p><pre><code>Input: n = 1\nOutput: true\n</code></pre><p><strong>Constraints:</strong></p><ul><li><p><code>1 &lt;= n &lt;= 231 - 1</code></p></li></ul>"
+    },
+    "categoriesId": [4],
+    "difficulty": "MEDIUM",
+    "testCases": [
+      {
+        "testCode": "n = 4\nser = Solution()\noutput = ser.canWinNim(n)\nprint(output)",
+        "input": "n = 4",
+        "isPublic": true,
+        "expectedOutput": "False"
+      },
+      {
+        "testCode": "n = 1\nser = Solution()\noutput = ser.canWinNim(n)\nprint(output)",
+        "input": "n = 1",
+        "isPublic": true,
+        "expectedOutput": "True"
+      },
+      {
+        "testCode": "n = 2\nser = Solution()\noutput = ser.canWinNim(n)\nprint(output)",
+        "input": "n = 2",
+        "isPublic": false,
+        "expectedOutput": "True"
+      }
+    ],
+    "templateCode": "class Solution:\n    def canWinNim(self, n: int) -> bool:\n        ",
+    "solutionCode": "class Solution:\n    def canWinNim(self, n: int) -> bool:\n        return True if n%4!=0 else False",
+    "link": "https://leetcode.com/problems/nim-game/description/"
+  },
+  "12": {
+    "title": "Wildcard Matching",
+    "description": {
+      "descriptionText": "Given an input string (s) and a pattern (p), implement wildcard pattern matching with support for '?' and '*' where:\n\n\n\n\n\n'?' Matches any single character.\n\n\n\n'*' Matches any sequence of characters (including the empty sequence).\n\nThe matching should cover the entire input string (not partial).\n\nExample 1:\n\nInput: s = \"aa\", p = \"a\"\nOutput: false\nExplanation: \"a\" does not match the entire string \"aa\".",
+      "descriptionHtml": "<p>Given an input string (<code>s</code>) and a pattern (<code>p</code>), implement wildcard pattern matching with support for <code>'?'</code> and <code>'*'</code> where:</p><ul><li><p><code>'?'</code> Matches any single character.</p></li><li><p><code>'*'</code> Matches any sequence of characters (including the empty sequence).</p></li></ul><p>The matching should cover the <strong>entire</strong> input string (not partial).<br><br><strong>Example 1:</strong></p><pre><code>Input: s = \"aa\", p = \"a\"\nOutput: false\nExplanation: \"a\" does not match the entire string \"aa\".</code></pre>"
+    },
+    "categoriesId": [1, 5],
+    "difficulty": "HARD",
+    "testCases": [
+      {
+        "testCode": "s = 'aa'\np = 'a'\nser = Solution()\noutput = ser.isMatch(s, p)\nprint(output)",
+        "input": "s = 'aa'\np = 'a'",
+        "isPublic": true,
+        "expectedOutput": "False"
+      },
+      {
+        "testCode": "s = 'aa'\np = '*'\nser = Solution()\noutput = ser.isMatch(s, p)\nprint(output)",
+        "input": "s = 'aa'\np = '*'",
+        "isPublic": true,
+        "expectedOutput": "True"
+      },
+      {
+        "testCode": "s = 'cb'\np = '?a'\nser = Solution()\noutput = ser.isMatch(s, p)\nprint(output)",
+        "input": "s = 'cb'\np = '?a'",
+        "isPublic": false,
+        "expectedOutput": "False"
+      }
+    ],
+    "templateCode": "class Solution:\n    def isMatch(self, s: str, p: str) -> bool:\n        ",
+    "solutionCode": "class Solution:\n    def isMatch(self, s: str, p: str) -> bool:\n\n        m, n = len(s), len(p)\n\n        dp_ip1 = [True] * (n + 1)\n        for j in range(n-1, -1, -1):\n            dp_ip1[j] = p[j] == '*' and dp_ip1[j+1]\n        \n        for i in range(m-1, -1, -1):\n            dp_i = [False] * (n+1)\n            for j in range(n-1, -1, -1):\n                if s[i] == p[j] or p[j] == '?':\n                    dp_i[j] = dp_ip1[j+1]\n                elif p[j] == '*':\n                    dp_i[j] = dp_ip1[j] or dp_i[j+1]\n                else:\n                    dp_i[j] = False\n            dp_ip1 = dp_i\n        return dp_ip1[0]\n",
+    "link": "https://leetcode.com/problems/wildcard-matching/description/"
+  },
+  "13": {
+    "title": "Combine Two Tables",
+    "description": {
+      "descriptionText": "Given table Person with the following columns: \n\n\n\n\n\npersonId (int) \n\n\n\nlastName (varchar) \n\n\n\nfirstName (varchar) \n\npersonId is the primary key. \nAnd table Address with the following columns: \n\n\n\n\n\naddressId (int)\n\n\n\npersonId (int) \n\n\n\ncity (varchar) \n\n\n\nstate (varchar) \n\naddressId is the primary key. \n\nWrite a solution to report the first name, last name, city, and state of each person in the Person table. If the address of a personId is not present in the Address table, report null instead. Return the result table in any order.\"",
+      "descriptionHtml": "<p>Given table Person with the following columns: </p><ol><li><p>personId (int) </p></li><li><p>lastName (varchar) </p></li><li><p>firstName (varchar) </p></li></ol><p>personId is the primary key. <br>And table Address with the following columns: </p><ol><li><p>addressId (int)</p></li><li><p>personId (int) </p></li><li><p>city (varchar) </p></li><li><p>state (varchar) </p></li></ol><p>addressId is the primary key. </p><p>Write a solution to report the first name, last name, city, and state of each person in the Person table. If the address of a personId is not present in the Address table, report null instead. Return the result table in any order.\"</p>"
+    },
+    "categoriesId": [2],
+    "difficulty": "EASY",
+    "testCases": [
+      {
+        "testCode": "No test code available",
+        "input": "No test case available",
+        "isPublic": false,
+        "expectedOutput": "NA"
+      }
+    ],
+    "templateCode": "# Write your MySQL query statement below\n",
+    "solutionCode": "SELECT Person.firstName, Person.lastName, Address.city, Address.state\nFROM person\nLEFT JOIN Address\nON person.personId = Address.personId;",
+    "link": "https://leetcode.com/problems/combine-two-tables/"
+  },
+  "14": {
+    "title": "Regular Expression Matching",
+    "description": {
+      "descriptionText": "Given an input string s and a pattern p, implement regular expression matching with support for '.' and '*' where:\n\n\n\n\n\n'.' Matches any single character.​​​​\n\n\n\n'*' Matches zero or more of the preceding element.\n\nThe matching should cover the entire input string (not partial).\n\nExample 1:\n\nInput: s = \"aa\", p = \"a\"\nOutput: false\nExplanation: \"a\" does not match the entire string \"aa\".\n\n\nExample 2:\n\nInput: s = \"aa\", p = \"a*\"\nOutput: true\nExplanation: '*' means zero or more of the preceding element, 'a'. Therefore, by repeating 'a' once, it becomes \"aa\".\n\n\nConstraints:\n\n\n\n\n\n1 <= s.length <= 20\n\n\n\n1 <= p.length <= 20\n\n\n\ns contains only lowercase English letters.\n\n\n\np contains only lowercase English letters, '.', and '*'.\n\n\n\nIt is guaranteed for each appearance of the character '*', there will be a previous valid character to match.",
+      "descriptionHtml": "<p>Given an input string <code>s</code>&nbsp;and a pattern <code>p</code>, implement regular expression matching with support for <code>'.'</code> and <code>'*'</code> where:</p><ul><li><p><code>'.'</code> Matches any single character.​​​​</p></li><li><p><code>'*'</code> Matches zero or more of the preceding element.</p></li></ul><p>The matching should cover the <strong>entire</strong> input string (not partial).<br><br><strong>Example 1:</strong></p><pre><code>Input: s = \"aa\", p = \"a\"\nOutput: false\nExplanation: \"a\" does not match the entire string \"aa\".\n</code></pre><p><strong>Example 2:</strong></p><pre><code>Input: s = \"aa\", p = \"a*\"\nOutput: true\nExplanation: '*' means zero or more of the preceding element, 'a'. Therefore, by repeating 'a' once, it becomes \"aa\".\n</code></pre><p><strong>Constraints:</strong></p><ul><li><p><code>1 &lt;= s.length&nbsp;&lt;= 20</code></p></li><li><p><code>1 &lt;= p.length&nbsp;&lt;= 20</code></p></li><li><p><code>s</code> contains only lowercase English letters.</p></li><li><p><code>p</code> contains only lowercase English letters, <code>'.'</code>, and&nbsp;<code>'*'</code>.</p></li><li><p>It is guaranteed for each appearance of the character <code>'*'</code>, there will be a previous valid character to match.</p></li></ul>"
+    },
+    "categoriesId": [7],
+    "difficulty": "HARD",
+    "testCases": [
+      {
+        "testCode": "s = 'aa'\np = 'a'\nser = Solution()\noutput = ser.isMatch(s, p)\nprint(output)",
+        "input": "s = 'aa'\np = 'a'",
+        "isPublic": true,
+        "expectedOutput": "False"
+      },
+      {
+        "testCode": "s = 'aa'\np = 'a*'\nser = Solution()\noutput = ser.isMatch(s, p)\nprint(output)",
+        "input": "s = 'aa'\np = 'a*'",
+        "isPublic": true,
+        "expectedOutput": "True"
+      },
+      {
+        "testCode": "s = 'ab'\np = '.*'\nser = Solution()\noutput = ser.isMatch(s, p)\nprint(output)",
+        "input": "s = 'ab'\np = '.*'",
+        "isPublic": false,
+        "expectedOutput": "True"
+      }
+    ],
+    "templateCode": "class Solution:\n    def isMatch(self, s: str, p: str) -> bool:\n        ",
+    "solutionCode": "class Solution:\n    def isMatch(self, s: str, p: str) -> bool:\n        # TOP-Down Memoization\n\n        cache = {}\n\n        def dfs(i, j):\n            if (i, j) in cache:\n                return cache[(i, j)]\n            if i >= len(s) and j >= len(p):\n                return True\n            if j >= len(p):\n                return False\n            \n            match = i < len(s) and (s[i] == p[j] or p[j] == \".\")\n            if (j + 1) < len(p) and p[j + 1] == \"*\": #the first char in pattern string is never going to be '*\n                        # don't use \"*\"\n                cache[(i, j)] = (dfs(i, j + 2)) or (match and dfs(i + 1, j)) \n                                             # use \"*\", and we can only use \"*\" if there is match\n                return cache[(i, j)]\n            if match:\n                cache[(i, j)] = dfs(i + 1, j + 1)\n                return cache[(i, j)]\n            \n            cache[(i, j)] = False\n            return False\n            \n        return dfs(0, 0)",
+    "link": "https://leetcode.com/problems/regular-expression-matching/description/"
+  },
+  "15": {
+    "title": "Course Schedule",
+    "description": {
+      "descriptionText": "There are a total of numCourses courses you have to take, labeled from 0 to numCourses - 1. You are given an array prerequisites where prerequisites[i] = [ai, bi] indicates that you must take course bi first if you want to take course ai.\n\n\n\n\n\nFor example, the pair [0, 1], indicates that to take course 0 you have to first take course 1.\n\nReturn true if you can finish all courses. Otherwise, return false.\n\n \n\nExample 1:\n\nInput: numCourses = 2, prerequisites = [[1,0]]\nOutput: true\nExplanation: There are a total of 2 courses to take. \nTo take course 1 you should have finished course 0. So it is possible.\n\nConstraints:\n\n\n\n\n\n1 <= numCourses <= 2000\n\n\n\n0 <= prerequisites.length <= 5000\n\n\n\nprerequisites[i].length == 2\n\n\n\n0 <= ai, bi < numCourses\n\n\n\nAll the pairs prerequisites[i] are unique.",
+      "descriptionHtml": "<p>There are a total of <code>numCourses</code> courses you have to take, labeled from <code>0</code> to <code>numCourses - 1</code>. You are given an array <code>prerequisites</code> where <code>prerequisites[i] = [ai, bi]</code> indicates that you <strong>must</strong> take course <code>bi</code> first if you want to take course <code>ai</code>.</p><ul><li><p>For example, the pair <code>[0, 1]</code>, indicates that to take course <code>0</code> you have to first take course <code>1</code>.</p></li></ul><p>Return <code>true</code> if you can finish all courses. Otherwise, return <code>false</code>.</p><p>&nbsp;</p><p><strong>Example 1:</strong></p><pre><code>Input: numCourses = 2, prerequisites = [[1,0]]\nOutput: true\nExplanation: There are a total of 2 courses to take. \nTo take course 1 you should have finished course 0. So it is possible.</code></pre><p><strong>Constraints:</strong></p><ul><li><p><code>1 &lt;= numCourses &lt;= 2000</code></p></li><li><p><code>0 &lt;= prerequisites.length &lt;= 5000</code></p></li><li><p><code>prerequisites[i].length == 2</code></p></li><li><p><code>0 &lt;= ai, bi &lt; numCourses</code></p></li><li><p>All the pairs prerequisites[i] are <strong>unique</strong>.</p></li></ul>"
+    },
+    "categoriesId": [4],
+    "difficulty": "MEDIUM",
+    "testCases": [
+      {
+        "testCode": "numCourses = 2\nprerequisites = [[1, 0]]\nresult = Solution().canFinish(numCourses, prerequisites)\nprint(result)",
+        "input": "numCourses = 2\nprerequisites = [[1, 0]]",
+        "isPublic": true,
+        "expectedOutput": "True",
+        "_id": { "$oid": "6728cdb075578be649dec559" }
+      },
+      {
+        "testCode": "numCourses = 2\nprerequisites = [[1, 0], [0, 1]]\nresult = Solution().canFinish(numCourses, prerequisites)\nprint(result)",
+        "input": "numCourses = 2, prerequisites = [[1, 0], [0, 1]]",
+        "isPublic": false,
+        "expectedOutput": "False",
+        "_id": { "$oid": "6728cdb075578be649dec55a" }
+      }
+    ],
+    "templateCode": "from typing import List\nfrom collections import deque\nclass Solution:\n    def canFinish(self, numCourses: int, prerequisites: List[List[int]]) -> bool:\n        ",
+    "solutionCode": "from typing import List\nfrom collections import deque\nclass Solution:\n    def canFinish(self, numCourses: int, prerequisites: List[List[int]]) -> bool:\n        counter = 0\n\n        if numCourses <= 0:\n            return True\n\n        # Initialize inDegree array and adjacency list\n        inDegree = [0] * numCourses\n        graph = [[] for _ in range(numCourses)]\n\n        # Build the graph and update inDegree for each node\n        for edge in prerequisites:\n            parent, child = edge[1], edge[0]\n            graph[parent].append(child)\n            inDegree[child] += 1\n\n        # Initialize the queue with courses having no prerequisites (inDegree = 0)\n        sources = deque()\n        for i in range(numCourses):\n            if inDegree[i] == 0:\n                sources.append(i)\n\n        # Process nodes with no prerequisites\n        while sources:\n            course = sources.popleft()  # dequeue\n            counter += 1\n\n            # Process all the children of the current course\n            for child in graph[course]:\n                inDegree[child] -= 1\n                if inDegree[child] == 0:\n                    sources.append(child)  # enqueue child if inDegree becomes 0\n\n        # If we processed all courses, return true\n        return counter == numCourses\n",
+    "link": "https://leetcode.com/problems/course-schedule/"
+  },
+  "16": {
+    "title": "Longest Palindromic Substring",
+    "description": {
+      "descriptionText": "Given a string s, return the longest palindromic substring in s.\n\n\n\nExample 1:\n\nInput: s = \"babad\"\nOutput: \"aba\"\nExplanation: Answer should return the one comes first in lexicographic order (aba vs bab -> return aba)\n\nConstraints:\n\n1 <= s.length <= 1000\n\ns consist of only digits and English letters.",
+      "descriptionHtml": "<p>Given a string&nbsp;<code>s</code>, return&nbsp;<em>the longest</em>&nbsp;<em>palindromic substring</em>&nbsp;in&nbsp;<code>s</code>.</p><p></p><p><strong>Example 1:</strong></p><pre><code>Input: s = \"babad\"\nOutput: \"aba\"\nExplanation: Answer should return the one comes first in lexicographic order (aba vs bab -&gt; return aba)</code></pre><p><strong>Constraints:</strong></p><p><code>1 &lt;= s.length &lt;= 1000</code></p><p><code>s</code>&nbsp;consist of only digits and English letters.</p>"
+    },
+    "categoriesId": [1],
+    "difficulty": "MEDIUM",
+    "testCases": [
+      {
+        "testCode": "solution = Solution()\nresult = solution.longestPalindrome(\"babad\")\nprint(result)",
+        "input": "babad",
+        "isPublic": true,
+        "expectedOutput": "aba"
+      },
+      {
+        "testCode": "solution = Solution()\nresult = solution.longestPalindrome(\"cbbd\")\nprint(result)",
+        "input": "cbbd",
+        "isPublic": false,
+        "expectedOutput": "bb"
+      }
+    ],
+    "templateCode": "class Solution(object):\n    def longestPalindrome(self, s):\n        \"\"\"\n        :type s: str\n        :rtype: str\n        \"\"\"\n        ",
+    "solutionCode": "class Solution(object):\n    def longestPalindrome(self, s):\n            longest_palindrom = ''\n            dp = [[0]*len(s) for _ in range(len(s))]\n            #filling out the diagonal by 1\n            for i in range(len(s)):\n                dp[i][i] = True\n                longest_palindrom = s[i]\n                \n            # filling the dp table\n            for i in range(len(s)-1,-1,-1):\n                    # j starts from the i location : to only work on the upper side of the diagonal \n                for j in range(i+1,len(s)):  \n                    if s[i] == s[j]:  #if the chars mathces\n                        # if len slicied sub_string is just one letter if the characters are equal, we can say they are palindomr dp[i][j] =True \n                        #if the slicied sub_string is longer than 1, then we should check if the inner string is also palindrom (check dp[i+1][j-1] is True)\n                        if j-i ==1 or dp[i+1][j-1] is True:\n                            dp[i][j] = True\n                            # we also need to keep track of the maximum palindrom sequence \n                            if len(longest_palindrom) < len(s[i:j+1]):\n                                longest_palindrom = s[i:j+1]\n                    \n            return longest_palindrom",
+    "link": "https://leetcode.com/problems/longest-palindromic-substring/description/"
+  },
+  "17": {
+    "title": "Single Number II",
+    "description": {
+      "descriptionText": "Given an integer array nums where every element appears three times except for one, which appears exactly once. Find the single element and return it.\n\nYou must implement a solution with a linear runtime complexity and use only constant extra space.\n\n \n\nExample 1:\n\nInput: nums = [2,2,3,2]\nOutput: 3\n\n\nConstraints:\n\n1 <= nums.length <= 3 * 104\n\n-231 <= nums[i] <= 231 - 1\n\nEach element in nums appears exactly three times except for one element which appears once.",
+      "descriptionHtml": "<p>Given an integer array&nbsp;<code>nums</code>&nbsp;where&nbsp;every element appears&nbsp;<strong>three times</strong>&nbsp;except for one, which appears&nbsp;<strong>exactly once</strong>.&nbsp;<em>Find the single element and return it</em>.</p><p>You must&nbsp;implement a solution with a linear runtime complexity and use&nbsp;only constant&nbsp;extra space.</p><p>&nbsp;</p><p><strong>Example 1:</strong></p><pre><code>Input: nums = [2,2,3,2]\nOutput: 3\n</code></pre><p><strong>Constraints:</strong></p><p><code>1 &lt;= nums.length &lt;= 3 * 104</code></p><p><code>-231 &lt;= nums[i] &lt;= 231 - 1</code></p><p>Each element in&nbsp;<code>nums</code>&nbsp;appears exactly&nbsp;<strong>three times</strong>&nbsp;except for one element which appears&nbsp;<strong>once</strong>.</p>"
+    },
+    "categoriesId": [6],
+    "difficulty": "MEDIUM",
+    "testCases": [
+      {
+        "testCode": "sol = Solution()\nresult = sol.singleNumber([2,2,3,2])\nprint(result)",
+        "input": "nums = [2,2,3,2]",
+        "isPublic": true,
+        "expectedOutput": "3"
+      },
+      {
+        "testCode": "sol = Solution()\nresult = sol.singleNumber([0,1,0,1,0,1,99])\nprint(result)",
+        "input": "nums = [0,1,0,1,0,1,99]",
+        "isPublic": false,
+        "expectedOutput": "99"
+      }
+    ],
+    "templateCode": "class Solution(object):\n    def singleNumber(self, nums):\n        \"\"\"\n        :type nums: List[int]\n        :rtype: int\n        \"\"\"\n        ",
+    "solutionCode": "class Solution(object):\n    def singleNumber(self, nums):\n        \"\"\"\n        :type nums: List[int]\n        :rtype: int\n        \"\"\"\n        d={}\n        for i in nums:\n            if i in d:\n                d[i]+=1\n            else:\n                d[i]=1\n        for key, val in d.items():\n            if d[key]==1:\n                return key\n        ",
+    "link": "https://leetcode.com/problems/single-number-ii/description/"
+  },
+  "18": {
+    "title": "Different Ways to Add Parentheses",
+    "description": {
+      "descriptionText": "Given a string expression of numbers and operators, return all possible results from computing all the different possible ways to group numbers and operators. You may return the answer in an increasing order.\n\nThe test cases are generated such that the output values fit in a 32-bit integer and the number of different results does not exceed 104.\n\n \n\nExample 1:\n\nInput: expression = \"2-1-1\"\nOutput: [2,0]\nExplanation:\n((2-1)-1) = 0 \n(2-(1-1)) = 2",
+      "descriptionHtml": "<p>Given a string&nbsp;<code>expression</code>&nbsp;of numbers and operators, return&nbsp;<em>all possible results from computing all the different possible ways to group numbers and operators</em>. You may return the answer in&nbsp;<strong>an increasing order</strong>.</p><p>The test cases are generated such that the output values fit in a 32-bit integer and the number of different results does not exceed&nbsp;<code>104</code>.</p><p>&nbsp;</p><p><strong>Example 1:</strong></p><pre><code>Input: expression = \"2-1-1\"\nOutput: [2,0]\nExplanation:\n((2-1)-1) = 0 \n(2-(1-1)) = 2</code></pre>"
+    },
+    "categoriesId": [7],
+    "difficulty": "MEDIUM",
+    "testCases": [
+      {
+        "testCode": "sol = Solution()\nresult = sol.diffWaysToCompute(\"2-1-1\")\nprint(result)",
+        "input": "expression = \"2-1-1\"",
+        "isPublic": true,
+        "expectedOutput": "[0, 2]"
+      },
+      {
+        "testCode": "sol = Solution()\nresult = sol.diffWaysToCompute(\"2*3-4*5\")\nprint(result)",
+        "input": "expression = \"2*3-4*5\"",
+        "isPublic": false,
+        "expectedOutput": "[-34, -14, -10, -10, 10]"
+      }
+    ],
+    "templateCode": "from typing import List\nclass Solution(object):\n    def diffWaysToCompute(self, expression):\n        \"\"\"\n        :type expression: str\n        :rtype: List[int]\n        \"\"\"\n        \n        ",
+    "solutionCode": "from typing import List\nclass Solution:\n    def diffWaysToCompute(self, expression: str) -> List[int]:\n        # base case: zero or one operator, just output the result\n        if expression.count(\"+\")+expression.count(\"-\")+expression.count(\"*\")<2:\n            return [eval(expression)]\n        \n        res=[]\n        # when see a operator, calculate all the combinations that can happen before the operator, and after the operator\n        for i in range(len(expression)):\n            if expression[i] in [\"+\",\"-\",\"*\"]:\n                left=self.diffWaysToCompute(expression[:i])\n                right=self.diffWaysToCompute(expression[i+1:])\n                for x in left:\n                    for y in right:\n                        res.append(eval(str(x)+expression[i]+str(y)))\n        res.sort()\n        \n        return res",
+    "link": "https://leetcode.com/problems/different-ways-to-add-parentheses/description/"
+  },
+  "19": {
+    "title": " Binary Tree Maximum Path Sum",
+    "description": {
+      "descriptionText": "A path in a binary tree is a sequence of nodes where each pair of adjacent nodes in the sequence has an edge connecting them. A node can only appear in the sequence at most once. Note that the path does not need to pass through the root.\n\nThe path sum of a path is the sum of the node's values in the path.\n\nGiven the root of a binary tree, return the maximum path sum of any non-empty path.\n\nExample\nInput: root = [1,2,3]\nOutput: 6\nExplanation: The optimal path is 2 -> 1 -> 3 with a path sum of 2 + 1 + 3 = 6.",
+      "descriptionHtml": "<p>A <strong>path</strong> in a binary tree is a sequence of nodes where each pair of adjacent nodes in the sequence has an edge connecting them. A node can only appear in the sequence <strong>at most once</strong>. Note that the path does not need to pass through the root.</p><p>The <strong>path sum</strong> of a path is the sum of the node's values in the path.</p><p>Given the <code>root</code> of a binary tree, return <em>the maximum </em><strong><em>path sum</em></strong><em> of any </em><strong><em>non-empty</em></strong><em> path</em>.</p><p><strong>Example</strong><br>Input: root = [1,2,3]\nOutput: 6\nExplanation: The optimal path is 2 -&gt; 1 -&gt; 3 with a path sum of 2 + 1 + 3 = 6.</p>"
+    },
+    "categoriesId": [3],
+    "difficulty": "HARD",
+    "testCases": [
+      {
+        "testCode": "def build_tree(nodes):\n    if not nodes:\n        return None\n    \n    root = TreeNode(nodes[0])\n    queue = [root]\n    index = 1\n\n    while index < len(nodes):\n        node = queue.pop(0)\n        if nodes[index] is not None:\n            node.left = TreeNode(nodes[index])\n            queue.append(node.left)\n        index += 1\n        \n        if index < len(nodes) and nodes[index] is not None:\n            node.right = TreeNode(nodes[index])\n            queue.append(node.right)\n        index += 1\n\n    return root\n\n\nif __name__ == \"__main__\":\n    root1 = build_tree([1, 2, 3])\n    solution = Solution()\n    print(solution.maxPathSum(root1))",
+        "input": "root = [1,2,3]",
+        "isPublic": true,
+        "expectedOutput": "6"
+      },
+      {
+        "testCode": "def build_tree(nodes):\n    if not nodes:\n        return None\n    \n    root = TreeNode(nodes[0])\n    queue = [root]\n    index = 1\n\n    while index < len(nodes):\n        node = queue.pop(0)\n        if nodes[index] is not None:\n            node.left = TreeNode(nodes[index])\n            queue.append(node.left)\n        index += 1\n        \n        if index < len(nodes) and nodes[index] is not None:\n            node.right = TreeNode(nodes[index])\n            queue.append(node.right)\n        index += 1\n\n    return root\n\n\nif __name__ == \"__main__\":\n    root1 = build_tree([-10, 9, 20, None, None, 15, 7])\n    solution = Solution()\n    print(solution.maxPathSum(root1))",
+        "input": "root = [-10,9,20,null,null,15,7]",
+        "isPublic": false,
+        "expectedOutput": "42"
+      }
+    ],
+    "templateCode": "#Definition for a binary tree node.\nfrom typing import Optional\nclass TreeNode:\n    def __init__(self, val=0, left=None, right=None):\n        self.val = val\n        self.left = left\n        self.right = right\nclass Solution:\n    def maxPathSum(self, root: Optional[TreeNode]) -> int:\n        ",
+    "solutionCode": "from typing import Optional\n# Definition for a binary tree node.\nclass TreeNode:\n    def __init__(self, val=0, left=None, right=None):\n        self.val = val\n        self.left = left\n        self.right = right\n\nclass Solution:\n    def maxPathSum(self, root: Optional[TreeNode]) -> int:\n        answer=float('-inf')\n        \n        def dfs(node):\n            nonlocal answer\n\n            if node==None:\n                return 0\n            \n            leftsum=dfs(node.left)\n            rightsum=dfs(node.right)\n            \n            leftsum=max(leftsum,0)\n            rightsum=max(rightsum,0)\n            \n            answer=max(answer,node.val+leftsum+rightsum)\n            \n            return node.val+max(leftsum,rightsum)\n        \n        dfs(root)\n        return answer",
+    "link": "https://leetcode.com/problems/binary-tree-maximum-path-sum/description/"
+  }
+}

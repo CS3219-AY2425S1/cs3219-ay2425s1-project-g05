@@ -1,0 +1,4 @@
+.testCaseHeader {
+  font-size: var(--input-label-size, var(--mantine-font-size-sm));
+  margin-top: 12px;
+}

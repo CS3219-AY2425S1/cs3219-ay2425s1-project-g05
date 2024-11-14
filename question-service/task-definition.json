@@ -1,0 +1,49 @@
+{
+  "family": "peerprep-question-service",
+  "containerDefinitions": [
+    {
+      "name": "question-service",
+      "image": "asdfghjklxd/peerprep-question-service:latest",
+      "cpu": 0,
+      "portMappings": [
+        {
+          "name": "question-service",
+          "containerPort": 8003,
+          "hostPort": 8003,
+          "protocol": "tcp",
+          "appProtocol": "http"
+        }
+      ],
+      "essential": true,
+      "environmentFiles": [],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "ulimits": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/peerprep-question-service",
+          "mode": "non-blocking",
+          "awslogs-create-group": "true",
+          "max-buffer-size": "25m",
+          "awslogs-region": "ap-southeast-1",
+          "awslogs-stream-prefix": "ecs"
+        },
+        "secretOptions": []
+      },
+      "systemControls": []
+    }
+  ],
+  "taskRoleArn": "arn:aws:iam::730335480348:role/AmazonEC2ContainerServiceforEC2Role",
+  "executionRoleArn": "arn:aws:iam::730335480348:role/AmazonEC2ContainerServiceforEC2Role",
+  "networkMode": "bridge",
+  "volumes": [],
+  "placementConstraints": [],
+  "requiresCompatibilities": ["EC2"],
+  "cpu": "338",
+  "memory": "338",
+  "runtimePlatform": {
+    "cpuArchitecture": "ARM64",
+    "operatingSystemFamily": "LINUX"
+  }
+}

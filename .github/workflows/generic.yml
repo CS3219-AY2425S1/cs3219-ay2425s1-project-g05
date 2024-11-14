@@ -1,0 +1,87 @@
+name: 'Generic Test Workflows'
+
+on:
+  push:
+    branches:
+      - '!main'
+      - '!staging'
+      - '!frontend-staging'
+  pull_request:
+    branches:
+      - '!main'
+      - '!staging'
+      - '!frontend-staging'
+  workflow_dispatch:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [20, 22]
+    name: Run tests on ${{ matrix.os }} with Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Install Frontend Node Dependencies
+        working-directory: peer-prep
+        run: npm ci
+
+      - name: Test Build on Frontend
+        working-directory: peer-prep
+        run: npm run build
+
+      - name: Test User Service
+        working-directory: user-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Question Service
+        working-directory: question-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Matching Service
+        working-directory: matching-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Collaboration Service
+        working-directory: collaboration-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Communication Service
+        working-directory: communication-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Run Service
+        working-directory: run-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test History Service
+        working-directory: history-service
+        run: |
+          npm ci
+          npm run test
+
+      - name: Test Gen AI Service
+        working-directory: gen-ai-service
+        run: |
+          npm ci
+          npm run test

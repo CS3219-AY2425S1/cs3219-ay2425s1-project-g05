@@ -1,0 +1,70 @@
+services:
+  redis:
+    image: redis:latest
+    restart: always
+    command: redis-server --loglevel warning
+    ports:
+      - '6379:6379'
+
+  user-service:
+    restart: always
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - '8001:8001'
+
+  matching-serivce:
+    restart: always
+    build:
+      context: ./matching-service
+      dockerfile: Dockerfile
+    ports:
+      - '8002:8002'
+
+  question-service:
+    restart: always
+    build:
+      context: ./question-service
+      dockerfile: Dockerfile
+    ports:
+      - '8003:8003'
+
+  collaboration-service:
+    restart: always
+    build:
+      context: ./collaboration-service
+      dockerfile: Dockerfile
+    ports:
+      - '8004:8004'
+
+  communication-service:
+    restart: always
+    build:
+      context: ./communication-service
+      dockerfile: Dockerfile
+    ports:
+      - '8005:8005'
+
+  history-service:
+    restart: always
+    build:
+      context: ./history-service
+      dockerfile: Dockerfile
+    ports:
+      - '8006:8006'
+
+  run-service:
+    restart: always
+    build:
+      context: ./run-service
+      dockerfile: Dockerfile
+    ports:
+      - '8007:8007'
+
+  gen-ai-service:
+    build:
+      context: ./gen-ai-service
+      dockerfile: Dockerfile
+    ports:
+      - '8008:8008'

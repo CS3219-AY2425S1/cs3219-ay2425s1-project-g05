@@ -1,0 +1,36 @@
+{
+  "name": "collaboration-service",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "test": "mocha --exit"
+  },
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@monaco-editor/react": "^4.6.0",
+    "@node-redis/json": "^1.0.2",
+    "axios": "^1.7.7",
+    "c8": "^10.1.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "jsonwebtoken": "^9.0.2",
+    "mocha": "^10.8.2",
+    "nodemon": "^3.1.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "redis": "^4.7.0",
+    "state-local": "^1.0.7",
+    "supertest": "^7.0.0",
+    "uuid": "^10.0.0",
+    "vite": "^5.4.9",
+    "y-monaco": "^0.1.6",
+    "y-websocket": "^2.0.4",
+    "yjs": "^13.6.20"
+  }
+}

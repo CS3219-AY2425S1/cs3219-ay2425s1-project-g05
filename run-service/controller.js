@@ -228,7 +228,7 @@ const executeTest = async (req, res) => {
         `channel:${channelId}`,
         JSON.stringify({
           statusCode: 200,
-          data: { results: results, questionId, code },
+          data: { results: results, questionId, code:codeAttempt },
         })
       );
 
@@ -249,7 +249,6 @@ const executeTest = async (req, res) => {
     const channelData = await redisClient.hGetAll(`channel:${channelId}`);
     if (channelData && channelData.status !== "processing") {
       await redisClient.hSet(`channel:${channelId}`, {
-        ...channelData,
         status: "processing",
         questionId,
         codeAttempt,
@@ -473,13 +472,16 @@ async function processTestcases(channelId, testcases, code, questionId) {
     const channelCurrentData = await redisClient.hGetAll(
       `channel:${channelId}`
     );
+
     await redisClient.hSet(`channel:${channelId}`, {
       status: hasError ? "error" : "completed",
       data: JSON.stringify(results),
       questionId: questionId,
-      codeAttempt: code,
-      ...channelCurrentData,
+      codeAttempt: code
     });
+    const channelDateToLog = await redisClient.hGetAll(`channel:${channelId}`);
+
+    console.log("kjvnjeknrvjrwek Channel data after setting status:", channelDateToLog);
 
     // Publish the "complete" status only if no errors occurred
     if (!hasError) {
